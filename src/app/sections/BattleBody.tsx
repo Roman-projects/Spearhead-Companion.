@@ -87,10 +87,12 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, turn, mode }: { phase: PhaseId; turn: TurnSide; mode: ViewMode }) {
+function PhaseContent({ phase, turn, mode, battleRound }: { phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number }) {
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
-  const visibleBlocks = blocks.filter((block) => block.items.length > 0);
+  const visibleBlocks = blocks
+    .filter((block) => block.items.length > 0)
+    .filter((block) => block.heading !== "Reinforcement" || battleRound >= 3);
   return (
     <section className="battle-phase-content" aria-live="polite">
       {visibleBlocks.length ? visibleBlocks.map((block, blockIndex) => (
@@ -112,7 +114,7 @@ function PhaseContent({ phase, turn, mode }: { phase: PhaseId; turn: TurnSide; m
   );
 }
 
-export function BattleBody() {
+export function BattleBody({ battleRound }: { battleRound: number }) {
   const [currentPhase, setCurrentPhase] = useState<PhaseId>("hero");
   const [viewedPhase, setViewedPhase] = useState<PhaseId>("hero");
   const [turn, setTurn] = useState<TurnSide>("own");
@@ -179,7 +181,7 @@ export function BattleBody() {
         </>}
       </div>
 
-      <PhaseContent phase={viewedPhase} turn={turn} mode={mode} />
+      <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} />
     </div>
   );
 }
