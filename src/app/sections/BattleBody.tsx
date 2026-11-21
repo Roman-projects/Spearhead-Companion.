@@ -103,7 +103,15 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
 }) {
   const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
   const data = phaseContent[phase];
-  const blocks = mode === "complete" ? (viewedArmy === "own" ? data.fullOwn : data.fullOpponent) : (viewedArmy === "own" ? data.own : data.opponent);
+  const viewingActiveArmy = viewedArmy === turn;
+  const viewedRole = viewingActiveArmy ? "attacker" : "defender";
+  // Current Crixxit content contains separate attacker and defender lists.
+  // Shacklehorde lists remain empty until their army data is added.
+  const blocks = viewedArmy === "own"
+    ? (viewingActiveArmy
+      ? (mode === "complete" ? data.fullOwn : data.own)
+      : (mode === "complete" ? data.fullOpponent : data.opponent))
+    : [];
   const visibleBlocks = blocks.filter((block) => block.items.length > 0)
     .filter((block) => block.heading !== "Reinforcement" || battleRound >= 3);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -202,6 +210,7 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
 
   return (
     <section className="battle-phase-content" aria-live="polite">
+      {visibleBlocks.length === 0 && <section className="battle-content-block battle-empty-army-list"><p>{viewedArmy === "own" ? "Crixxit" : "Cursed Shacklehorde"} · {viewedRole === "attacker" ? "Attacker" : "Defender"} list is not configured yet.</p></section>}
       {visibleBlocks.map((block, blockIndex) => {
         const key = `${phase}-${block.heading}-${blockIndex}`;
         const isCollapsed = collapsed[key] ?? false;
@@ -211,9 +220,9 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
           </button>
           {!isCollapsed && <div className="battle-action-list">
             {block.items.map((item) => {
-              const unavailable = item.includes("(unavailable)") || phase !== currentPhase || viewedArmy !== turn;
+              const unavailable = item.includes("(unavailable)") || phase !== currentPhase;
               const cleanItem = item.replace(" (unavailable)", "");
-              const itemKey = `${phase}-${cleanItem}`;
+              const itemKey = `${viewedArmy}-${viewedRole}-${phase}-${cleanItem}`;
               const isExpanded = !!expandedItems[itemKey];
               const isMovement = block.heading === "Movement";
               const isWeapon = block.heading === "Weapons" && (phase === "shooting" || phase === "combat");
@@ -237,12 +246,12 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
                   {isMovement ? <><p>Move characteristic: 7”</p><div className="battle-option-list">{movementOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
                     const optionUsed = !!usedActions[optionKey] || groupUsed;
-                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || viewedArmy !== turn || groupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || groupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
             })}</div></> :
                   isWeapon ? <div className="battle-option-list">{weaponOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
                     const optionUsed = !!usedActions[optionKey];
-                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || viewedArmy !== turn || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
                   })}</div> : <p>Information will be added here.</p>}
                 </div>}
               </article>;
@@ -250,7 +259,7 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
           </div>}
         </section>;
       })}
-      {phase === "end" && viewedArmy === turn && <section className="battle-scoring">
+      {phase === "end" && <section className="battle-scoring">
         <button type="button" className="battle-score-toggle" aria-expanded={scoringOpen} onClick={() => setScoringOpen((open) => !open)}>Puntuar <span>{scoringOpen ? "−" : "+"}</span></button>
         {scoringOpen && <>
         <p className="battle-eyebrow">END OF TURN SCORING</p>
@@ -339,11 +348,11 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
       <div className="battle-controls">
         <div className="battle-turn-picker">
           <button type="button" className="battle-turn-list-button" aria-expanded={turnMenuOpen} aria-haspopup="listbox" aria-label="Choose army to view" onClick={() => setTurnMenuOpen((open) => !open)}>
-            <span>{turn === "own" ? "Your turn" : "Opponent’s turn"}</span><span className="battle-chevron" aria-hidden="true">⌄</span>
+            <span>Viewing: {viewedArmy === "own" ? "Crixxit" : "Cursed Shacklehorde"} · {viewedArmy === turn ? "Attacker" : "Defender"}</span><span className="battle-chevron" aria-hidden="true">⌄</span>
           </button>
           {turnMenuOpen && <div className="battle-turn-menu" role="listbox" aria-label="Choose army to view">
-            <button type="button" role="option" aria-selected={turn === "own"} onClick={() => { onTurnChange("own"); setTurnMenuOpen(false); }}>Your turn</button>
-            <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { onTurnChange("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
+            <button type="button" role="option" aria-selected={viewedArmy === "own"} onClick={() => { setViewedArmy("own"); setTurnMenuOpen(false); }}>{turn === "own" ? "Crixxit · Attacker" : "Crixxit · Defender"}</button>
+            <button type="button" role="option" aria-selected={viewedArmy === "opponent"} onClick={() => { setViewedArmy("opponent"); setTurnMenuOpen(false); }}>{turn === "opponent" ? "Cursed Shacklehorde · Attacker" : "Cursed Shacklehorde · Defender"}</button>
           </div>}
         </div>
         <button type="button" className="battle-view-toggle battle-book-toggle" aria-label={`Vista ${layoutPreset}. Cambiar a ${layoutPreset === "closed" ? "táctica" : layoutPreset === "tactical" ? "completa" : "cerrada"}`} title={`Vista ${layoutPreset}`} aria-pressed={layoutPreset !== "closed"} onClick={() => setLayoutPreset((value) => value === "closed" ? "tactical" : value === "tactical" ? "complete" : "closed")}><BookIcon preset={layoutPreset} /></button>
