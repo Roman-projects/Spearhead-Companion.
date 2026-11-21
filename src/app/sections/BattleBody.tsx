@@ -213,7 +213,7 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
     }
   };
 
-  const finishTurn = () => {
+  const finishTurn = (nextTurn?: TurnSide) => {
     if (turn === "own") {
       onTurnChange("opponent");
       onPhaseChange("hero");
