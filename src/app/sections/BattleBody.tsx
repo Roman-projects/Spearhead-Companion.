@@ -105,13 +105,18 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
   const data = phaseContent[phase];
   const viewingActiveArmy = viewedArmy === turn;
   const viewedRole = viewingActiveArmy ? "attacker" : "defender";
-  // Current Crixxit content contains separate attacker and defender lists.
-  // Shacklehorde lists remain empty until their army data is added.
-  const blocks = viewedArmy === "own"
-    ? (viewingActiveArmy
-      ? (mode === "complete" ? data.fullOwn : data.own)
-      : (mode === "complete" ? data.fullOpponent : data.opponent))
-    : [];
+  const armyLists = {
+    own: {
+      attacker: { reduced: data.own, complete: data.fullOwn },
+      defender: { reduced: data.opponent, complete: data.fullOpponent },
+    },
+    opponent: {
+      attacker: { reduced: [] as ContentBlock[], complete: [] as ContentBlock[] },
+      defender: { reduced: [] as ContentBlock[], complete: [] as ContentBlock[] },
+    },
+  };
+  const selectedList = armyLists[viewedArmy][viewedRole];
+  const blocks = mode === "complete" ? selectedList.complete : selectedList.reduced;
   const visibleBlocks = blocks.filter((block) => block.items.length > 0)
     .filter((block) => block.heading !== "Reinforcement" || battleRound >= 3);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
