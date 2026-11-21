@@ -80,8 +80,8 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedActions, setUsedActions, onScore, onFinishTurn }: {
-  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: (nextTurn?: TurnSide) => void;
+function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
+  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; battleRound: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide) => void;
 }) {
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
@@ -104,11 +104,13 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
     setDraft({ objectives: 0, tactics: 0, twist: 0 });
     setScored(false);
     setScoringOpen(false);
-    setTransitionStep(null);
-    setPriorityWinner("own");
-    setNextStarter("own");
-    setUnderdogChecked(false);
-    setCardsChecked(false);
+    if (phase !== "end") {
+      setTransitionStep(null);
+      setPriorityWinner("own");
+      setNextStarter("own");
+      setUnderdogChecked(false);
+      setCardsChecked(false);
+    }
   }, [phase, turn]);
 
   const updateDraft = (key: keyof ScoreDraft, delta: number, max: number) => {
@@ -144,7 +146,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
         {transitionStep < 3 ? <button type="button" className="battle-primary-button" disabled={transitionStep === 2 && !underdogChecked} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
-          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onFinishTurn(nextStarter); }}>Complete round setup</button>}
+          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onCompleteRound(nextStarter); }}>Complete round setup</button>}
       </div>
     </section>;
   }
@@ -219,7 +221,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
         <div className="battle-score-total">Total this turn <strong>{draft.objectives + draft.tactics + draft.twist}</strong></div>
         <div className="battle-scoring-actions">
           <button type="button" className="battle-primary-button" disabled={scored} onClick={() => { onScore(draft.objectives + draft.tactics + draft.twist); setScored(true); }}>{scored ? "Scoring confirmed" : "Puntuar"}</button>
-          {scored && <button type="button" className="battle-primary-button" onClick={() => turn === "own" ? onFinishTurn() : setTransitionStep(0)}>Terminar turno</button>}
+          {scored && <button type="button" className="battle-primary-button" onClick={() => { if (turnNumber % 2 === 0) setTransitionStep(0); onFinishTurn(); }}>Terminar turno</button>}
         </div>
         <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
         </>}
@@ -254,19 +256,26 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, onT
     }
   };
 
-  const finishTurn = (nextTurn?: TurnSide) => {
+  const finishTurn = () => {
     setUsedActions({});
     onTurnNumberChange(turnNumber + 1);
-    if (turn === "own") {
-      onTurnChange("opponent");
-      onPhaseChange("hero");
-      setViewedPhase("hero");
+    onTurnChange(turn === "own" ? "opponent" : "own");
+    if (turnNumber % 2 === 0) {
+      // Even-numbered turns end the battle round. Keep the End of Turn
+      // section open while the round sequence is resolved.
+      onPhaseChange("end");
+      setViewedPhase("end");
     } else {
-      onRoundChange(battleRound + 1);
-      onTurnChange(nextTurn ?? "own");
       onPhaseChange("hero");
       setViewedPhase("hero");
     }
+  };
+
+  const completeRoundSetup = (nextStarter: TurnSide) => {
+    onRoundChange(battleRound + 1);
+    onTurnChange(nextStarter);
+    onPhaseChange("hero");
+    setViewedPhase("hero");
   };
 
   return (
@@ -293,8 +302,8 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, onT
         {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
-      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} /> :
-        <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} />}
+      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
+        <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} />}
       {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
   );
