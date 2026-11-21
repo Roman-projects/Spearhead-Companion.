@@ -5,7 +5,7 @@ type ViewMode = "reduced" | "complete";
 type ContentBlock = { heading: string; items: string[] };
 type ScoreDraft = { objectives: number; tactics: number; twist: number };
 type RoundSetupResult = {
-  priorityWinner: TurnSide;
+  priorityWinner: TurnSide | null;
   seizedInitiative: boolean;
   doubleTurn: boolean;
   tacticsDrawBlocked: boolean;
@@ -101,7 +101,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
   const [scored, setScored] = useState(false);
   const [scoringOpen, setScoringOpen] = useState(false);
   const [transitionStep, setTransitionStep] = useState<number | null>(null);
-  const [priorityWinner, setPriorityWinner] = useState<TurnSide>("own");
+  const [priorityRollConfirmed, setPriorityRollConfirmed] = useState(false);
   const [nextStarter, setNextStarter] = useState<TurnSide>("own");
   const [underdogChoice, setUnderdogChoice] = useState<TurnSide | null>(null);
   const [underdogChecked, setUnderdogChecked] = useState(false);
@@ -116,7 +116,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
     setScoringOpen(false);
     if (phase !== "end") {
       setTransitionStep(null);
-      setPriorityWinner("own");
+      setPriorityRollConfirmed(false);
       setNextStarter("own");
       setUnderdogChoice(null);
       setUnderdogChecked(false);
@@ -131,18 +131,17 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
 
   if (phase === "end" && transitionStep !== null) {
     const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
-    const seizedInitiative = priorityWinner === previousSecond && nextStarter === priorityWinner;
+    const seizedInitiative = false;
     const doubleTurn = nextStarter === previousSecond;
     const scoreGap = Math.abs(leftScore - rightScore);
     const scoreUnderdog: TurnSide | null = leftScore === rightScore ? null : leftScore < rightScore ? "own" : "opponent";
     const resolvedUnderdog = scoreUnderdog ?? underdogChoice;
     const tacticsDrawBlocked = seizedInitiative && !(resolvedUnderdog === nextStarter && scoreGap >= 5);
-    const winnerName = priorityWinner === "own" ? "Crixxit" : "Cursed Shacklehorde";
     const starterName = nextStarter === "own" ? "Crixxit" : "Cursed Shacklehorde";
     const underdogName = resolvedUnderdog === "own" ? "Crixxit" : "Cursed Shacklehorde";
     const steps = [
-      { title: "Priority roll", body: "Register the winner of the priority roll for the new battle round." },
-      { title: "Choose who starts", body: "The priority winner chooses which army takes the first turn of the new battle round." },
+      { title: "Priority roll", body: "Roll for priority to determine who gets to choose which army starts the new battle round." },
+      { title: "Choose who starts", body: "Select the army that will take the first turn. Left is always Crixxit; right is always Cursed Shacklehorde." },
       { title: "Initiative and active army", body: "Check whether the player who went second last round starts again. The active army and its lists will follow the selected starter." },
       { title: "Determine the Underdog", body: "The player with fewer victory points is the Underdog. If victory points are tied, resolve a roll-off and record its winner." },
       { title: "Draw the Twist card", body: "Draw and register the Twist card for the new battle round." },
@@ -154,22 +153,16 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
       <h2>{step.title}</h2>
       <p>{step.body}</p>
       <div className="battle-transition-progress">{steps.map((item, index) => <span key={item.title} className={index <= transitionStep ? "is-complete" : ""} />)}</div>
-      {transitionStep === 0 && <div className="battle-choice-row">
-        <button type="button" className={priorityWinner === "own" ? "is-selected" : ""} onClick={() => { setPriorityWinner("own"); setNextStarter("own"); }}>Crixxit wins priority</button>
-        <button type="button" className={priorityWinner === "opponent" ? "is-selected" : ""} onClick={() => { setPriorityWinner("opponent"); setNextStarter("opponent"); }}>Cursed Shacklehorde wins priority</button>
+      {transitionStep === 0 && <label className="battle-confirm-check"><input type="checkbox" checked={priorityRollConfirmed} onChange={(event) => setPriorityRollConfirmed(event.target.checked)} /> Priority roll completed</label>}
+      {transitionStep === 1 && <div className="battle-choice-row battle-army-side-choice">
+        <button type="button" className={nextStarter === "own" ? "is-selected" : ""} onClick={() => setNextStarter("own")}><span className="battle-side-label">LEFT</span><strong>Crixxit</strong></button>
+        <button type="button" className={nextStarter === "opponent" ? "is-selected" : ""} onClick={() => setNextStarter("opponent")}><span className="battle-side-label">RIGHT</span><strong>Cursed Shacklehorde</strong></button>
       </div>}
-      {transitionStep === 1 && <>
-        <p className="battle-scoring-note">Priority winner: {winnerName}. They must choose who starts.</p>
-        <div className="battle-choice-row">
-          <button type="button" className={nextStarter === priorityWinner ? "is-selected" : ""} onClick={() => setNextStarter(priorityWinner)}>Winner starts</button>
-          <button type="button" className={nextStarter !== priorityWinner ? "is-selected" : ""} onClick={() => setNextStarter(priorityWinner === "own" ? "opponent" : "own")}>Other army starts</button>
-        </div>
-      </>}
       {transitionStep === 2 && <>
         <p className="battle-scoring-note">Selected active army: <strong>{starterName}</strong>. Its army lists will be shown when the round starts.</p>
         <p className="battle-scoring-note">Player who went second last round: <strong>{previousSecond === "own" ? "Crixxit" : "Cursed Shacklehorde"}</strong>.</p>
         <p className="battle-scoring-note">{doubleTurn ? "Double turn: yes. The player who went second last round starts this round." : "Double turn: no."}</p>
-        <p className="battle-scoring-note">{seizedInitiative ? "Seizing the Initiative: yes. The previous second player won priority and chose to start." : "Seizing the Initiative: no."}</p>
+        <p className="battle-scoring-note">Seizing the Initiative will be determined when priority dice are integrated, because the roll winner is not recorded in this manual setup.</p>
       </>}
       {transitionStep === 3 && <>
         {scoreUnderdog ? <p className="battle-scoring-note">Based on the current score ({leftScore}–{rightScore}), the Underdog is <strong>{underdogName}</strong>. Difference: {scoreGap} VP.</p> :
@@ -184,7 +177,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
       {transitionStep === 4 && <label className="battle-confirm-check"><input type="checkbox" checked={twistDrawn} onChange={(event) => setTwistDrawn(event.target.checked)} /> Twist card drawn and registered</label>}
       {transitionStep === 5 && <>
         {seizedInitiative && <p className="battle-scoring-note">{tacticsDrawBlocked ? "Battle Tactics restriction: this army cannot draw new Battle Tactics cards this round. The exception does not apply because the player taking the initiative is not both the Underdog and at least 5 VP behind." : "Battle Tactics exception applies: the player taking the initiative is the Underdog and is at least 5 VP behind, so they may draw Battle Tactics cards."}</p>}
-        {!seizedInitiative && <p className="battle-scoring-note">No Seizing the Initiative restriction applies. Normal Battle Tactics card rules apply.</p>}
+        <p className="battle-scoring-note">Priority winner is not recorded in this manual setup. Battle Tactics draw restrictions for Seizing the Initiative will be evaluated when dice are integrated.</p>
         <div className="battle-score-row">
           <div><strong>Cards recovered</strong><span>Choose 0–3</span></div>
           <div className="battle-score-controls">
@@ -196,10 +189,10 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
       </>}
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
-        {transitionStep < 5 ? <button type="button" className="battle-primary-button" disabled={(transitionStep === 3 && !underdogChecked) || (transitionStep === 4 && !twistDrawn)} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
+        {transitionStep < 5 ? <button type="button" className="battle-primary-button" disabled={(transitionStep === 0 && !priorityRollConfirmed) || (transitionStep === 3 && !underdogChecked) || (transitionStep === 4 && !twistDrawn)} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
           <button type="button" className="battle-primary-button" onClick={() => {
             if (resolvedUnderdog === null) return;
-            onCompleteRound(nextStarter, { priorityWinner, seizedInitiative, doubleTurn, tacticsDrawBlocked, tacticsCardsRecovered: tacticsRecovered, underdog: resolvedUnderdog });
+            onCompleteRound(nextStarter, { priorityWinner: null, seizedInitiative: false, doubleTurn, tacticsDrawBlocked: false, tacticsCardsRecovered: tacticsRecovered, underdog: resolvedUnderdog });
           }}>Start Round</button>}
       </div>
     </section>;
@@ -276,11 +269,11 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
         <div className="battle-scoring-actions">
           <button type="button" className="battle-primary-button" disabled={scored} onClick={() => { onScore(draft.objectives + draft.tactics + draft.twist); setScored(true); }}>{scored ? "Scoring confirmed" : "Puntuar"}</button>
         </div>
-        <p className="battle-scoring-note">Scoring is optional. If you have no points to record, you can finish the turn without confirming a score.</p>
+        <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
         </>}
-        <div className="battle-scoring-actions battle-finish-turn">
+        {scored && <div className="battle-scoring-actions battle-finish-turn">
           <button type="button" className="battle-primary-button" onClick={() => { if (turnNumber % 2 === 0 && turnNumber !== 8) setTransitionStep(0); onFinishTurn(); }}>Terminar turno</button>
-        </div>
+        </div>}
       </section>}
     </section>
   );
