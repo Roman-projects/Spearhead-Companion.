@@ -6,6 +6,8 @@ import type { BattleState } from "./battleState";
 interface AppShellProps {
   activeSection: MainSection;
   onSectionChange: (section: MainSection) => void;
+  battleState: BattleState;
+  onBattleStateChange: (state: BattleState) => void;
 }
 
 type ArmyStatusTag = { id: string; label: string };
@@ -74,9 +76,9 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
         <section className="battle-heading" aria-label="Current battle"><h2>{battle.name}</h2></section>
 
         <section className="battle-scoreboard" aria-label="Battle scoreboard">
-          <ArmyPanel side="left" {...battle.left} />
-          <ArmyPanel side="right" {...battle.right} />
-          <RoundSpear round={battle.round} />
+          <ArmyPanel side="left" {...battle.left} score={battleState.leftScore} />
+          <ArmyPanel side="right" {...battle.right} score={battleState.rightScore} />
+          <RoundSpear round={battleState.round} />
         </section>
 
         <nav className="main-navigation" aria-label="Main sections">
@@ -90,9 +92,23 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
           </button>)}
         </nav>
 
-        {activeSection === "battle" ? <BattleBody battleRound={battle.round} /> : (
+        {activeSection === "battle" ? (
+          <BattleBody
+            battleRound={battleState.round}
+            turn={battleState.turn}
+            phase={battleState.phase}
+            onTurnChange={(turn) => onBattleStateChange({ ...battleState, turn })}
+            onPhaseChange={(phase) => onBattleStateChange({ ...battleState, phase })}
+            onRoundChange={(round) => onBattleStateChange({ ...battleState, round })}
+          />
+        ) : activeSection === "tracking" ? (
+          <TrackingBody
+            battleState={battleState}
+            onChange={(updates) => onBattleStateChange({ ...battleState, ...updates })}
+          />
+        ) : (
           <section className="section-placeholder" aria-live="polite">
-            <h2>{MAIN_SECTIONS.find((section) => section.id === activeSection)?.label}</h2>
+            <h2>Army</h2>
             <p>Section content will be built here.</p>
           </section>
         )}
