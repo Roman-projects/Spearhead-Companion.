@@ -100,6 +100,7 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
             onTurnChange={(turn) => onBattleStateChange({ ...battleState, turn })}
             onPhaseChange={(phase) => onBattleStateChange({ ...battleState, phase })}
             onRoundChange={(round) => onBattleStateChange({ ...battleState, round })}
+            onScoreChange={(side, score) => onBattleStateChange({ ...battleState, [side === "own" ? "leftScore" : "rightScore"]: battleState[side === "own" ? "leftScore" : "rightScore"] + score })}
           />
         ) : activeSection === "tracking" ? (
           <TrackingBody
