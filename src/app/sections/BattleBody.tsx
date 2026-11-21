@@ -178,14 +178,6 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
                     const optionKey = `${itemKey}-${option}`;
                     const optionUsed = !!usedActions[optionKey] || groupUsed;
                     return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || groupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
-                  })}</div></> :
-                  isWeapon ? <div className="battle-option-list">{(phase === "shooting" ? weaponOptions : weaponOptions).map((option) => {
-                    const optionKey = `${itemKey}-${option}`;
-                    const optionUsed = !!usedActions[optionKey];
-                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
-                  })}</div> : <p>Information will be added here.</p>}
-                </div>}
-              </article>;
             })}</div></> :
                   isWeapon ? <div className="battle-option-list">{weaponOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
