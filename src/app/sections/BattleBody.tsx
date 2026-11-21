@@ -141,7 +141,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPrese
     });
     setCollapsed(sectionState);
     setExpandedItems(itemState);
-  }, [phase, turn, layoutPreset]);
+  }, [phase, turn, mode, layoutPreset]);
 
   const updateDraft = (key: keyof ScoreDraft, delta: number, max: number) => {
     setDraft((value) => ({ ...value, [key]: Math.max(0, Math.min(max, value[key] + delta)) }));
