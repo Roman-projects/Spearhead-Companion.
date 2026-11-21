@@ -113,12 +113,19 @@ function PhaseContent({ phase, turn, mode, battleRound }: { phase: PhaseId; turn
   );
 }
 
-export function BattleBody({ battleRound }: { battleRound: number }) {
-  const [currentPhase, setCurrentPhase] = useState<PhaseId>("hero");
-  const [viewedPhase, setViewedPhase] = useState<PhaseId>("hero");
-  const [turn, setTurn] = useState<TurnSide>("own");
+export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChange, onRoundChange }: {
+  battleRound: number;
+  turn: TurnSide;
+  phase: PhaseId;
+  onTurnChange: (turn: TurnSide) => void;
+  onPhaseChange: (phase: PhaseId) => void;
+  onRoundChange: (round: number) => void;
+}) {
+  const currentPhase = phase;
+  const [viewedPhase, setViewedPhase] = useState<PhaseId>(phase);
   const [mode, setMode] = useState<ViewMode>("reduced");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
+  useEffect(() => { setViewedPhase(phase); }, [phase]);
   const currentIndex = phases.findIndex((item) => item.id === currentPhase);
   const isViewingCurrent = currentPhase === viewedPhase;
 
@@ -129,12 +136,13 @@ export function BattleBody({ battleRound }: { battleRound: number }) {
       onPhaseChange(nextPhase);
       setViewedPhase(nextPhase);
     } else if (direction === 1 && currentPhase === "end") {
-      setTurn((value) => value === "own" ? "opponent" : "own");
-      setCurrentPhase("hero");
+      if (turn === "opponent") onRoundChange(battleRound + 1);
+      onTurnChange(turn === "own" ? "opponent" : "own");
+      onPhaseChange("hero");
       setViewedPhase("hero");
     } else if (direction === -1 && currentPhase === "hero") {
-      setTurn((value) => value === "own" ? "opponent" : "own");
-      setCurrentPhase("end");
+      onTurnChange(turn === "own" ? "opponent" : "own");
+      onPhaseChange("end");
       setViewedPhase("end");
     }
   };
