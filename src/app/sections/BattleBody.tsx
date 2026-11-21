@@ -91,6 +91,7 @@ function EyeIcon({ open }: { open: boolean }) {
 function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound, roundStarter, leftScore, rightScore, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
   phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; battleRound: number; roundStarter: TurnSide; leftScore: number; rightScore: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide, result: RoundSetupResult) => void;
 }) {
+  const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
   const visibleBlocks = blocks.filter((block) => block.items.length > 0)
