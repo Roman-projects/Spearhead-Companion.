@@ -5,43 +5,23 @@ interface AppShellProps {
   onSectionChange: (section: MainSection) => void;
 }
 
-type ArmyStatusTag = {
-  id: string;
-  label: string;
-};
+type ArmyStatusTag = { id: string; label: string };
 
 const battle = {
   name: "Ciudad de Ceniza",
   round: 2,
-  left: {
-    faction: "SKAVEN",
-    army: "Crixxit’s Kill-Pack",
-    score: 8,
-    isActive: true,
-    temporaryTags: [] as ArmyStatusTag[],
-  },
-  right: {
-    faction: "NIGHTHAUNT",
-    army: "Cursed Shacklehorde",
-    score: 6,
-    isActive: false,
-    temporaryTags: [] as ArmyStatusTag[],
-  },
+  left: { faction: "SKAVEN", army: "Crixxit’s Kill-Pack", score: 8, isActive: true, temporaryTags: [] as ArmyStatusTag[] },
+  right: { faction: "NIGHTHAUNT", army: "Cursed Shacklehorde", score: 6, isActive: false, temporaryTags: [] as ArmyStatusTag[] },
 };
 
 function RoundSpear({ round }: { round: number }) {
   return (
     <div className="round-spear" aria-label={`Round ${round}`}>
       <svg className="spear-art" viewBox="0 0 80 340" role="img" aria-label="Ornate vertical spear">
-        <defs>
-          <linearGradient id="spearGold" x1="0" x2="1">
-            <stop offset="0" stopColor="#70451a" />
-            <stop offset=".28" stopColor="#f8dc91" />
-            <stop offset=".52" stopColor="#9b6828" />
-            <stop offset=".76" stopColor="#f4d27e" />
-            <stop offset="1" stopColor="#583715" />
-          </linearGradient>
-        </defs>
+        <defs><linearGradient id="spearGold" x1="0" x2="1">
+          <stop offset="0" stopColor="#70451a" /><stop offset=".28" stopColor="#f8dc91" />
+          <stop offset=".52" stopColor="#9b6828" /><stop offset=".76" stopColor="#f4d27e" /><stop offset="1" stopColor="#583715" />
+        </linearGradient></defs>
         <path d="M40 4 L57 82 L49 104 L71 129 L51 139 L48 178 L40 194 L32 178 L29 139 L9 129 L31 104 L23 82 Z" fill="url(#spearGold)" stroke="#f0c66e" strokeWidth="2"/>
         <path d="M40 18 L45 91 L40 111 L35 91 Z" fill="#fff0bd" opacity=".85"/>
         <path d="M40 194 L48 225 L45 306 L40 334 L35 306 L32 225 Z" fill="url(#spearGold)" stroke="#d6a34e" strokeWidth="1.5"/>
@@ -49,51 +29,27 @@ function RoundSpear({ round }: { round: number }) {
         <path d="M22 125 L58 125 M27 142 L53 142 M30 179 L50 179 M32 219 L48 219" stroke="#f3d18a" strokeWidth="3"/>
         <path d="M40 4 L40 334" stroke="#fff0bd" strokeWidth="1" opacity=".6"/>
       </svg>
-      <div className="round-medallion">
-        <span className="round-caption">Ronda</span>
-        <strong>{round}</strong>
-      </div>
+      <div className="round-medallion"><span className="round-caption">Ronda</span><strong>{round}</strong></div>
     </div>
   );
 }
 
-function ArmyPanel({
-  side,
-  faction,
-  army,
-  score,
-  isActive,
-  temporaryTags,
-}: {
-  side: "left" | "right";
-  faction: string;
-  army: string;
-  score: number;
-  isActive: boolean;
-  temporaryTags: ArmyStatusTag[];
+function ArmyPanel({ side, faction, army, score, isActive, temporaryTags }: {
+  side: "left" | "right"; faction: string; army: string; score: number; isActive: boolean; temporaryTags: ArmyStatusTag[];
 }) {
   return (
-    <article
-      className={`army-banner army-banner--${side} ${isActive ? "is-turn-active" : "is-turn-inactive"}`}
-      aria-label={`${army}, ${isActive ? "active turn" : "inactive turn"}`}
-    >
+    <article className={`army-banner army-banner--${side} ${isActive ? "is-turn-active" : "is-turn-inactive"}`}
+      aria-label={`${army}, ${isActive ? "active turn" : "inactive turn"}`}>
       <div className="army-heading">
         <p className="faction-name">
-          {side === "left" && <span aria-hidden="true">⚒</span>}
-          {faction}
+          {side === "left" && <span aria-hidden="true">⚒</span>}{faction}
           {side === "right" && <span aria-hidden="true">☠</span>}
         </p>
         <h3>{army}</h3>
       </div>
-
-      {temporaryTags.length > 0 && (
-        <div className="army-status-tags" aria-label="Temporary army status">
-          {temporaryTags.map((tag) => (
-            <span className="army-status-tag" key={tag.id}>{tag.label}</span>
-          ))}
-        </div>
-      )}
-
+      {temporaryTags.length > 0 && <div className="army-status-tags" aria-label="Temporary army status">
+        {temporaryTags.map((tag) => <span className="army-status-tag" key={tag.id}>{tag.label}</span>)}
+      </div>}
       <div className="army-score">{score}</div>
     </article>
   );
@@ -105,19 +61,14 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
       <div className="app-backdrop" aria-hidden="true" />
       <div className="app-content">
         <header className="brand-header">
-          <div className="brand-emblem" aria-hidden="true">✥</div>
-          <div className="brand-copy">
-            <h1>Spearhead Companion</h1>
-            <p>Warhammer Age of Sigmar</p>
+          <div className="brand-lockup">
+            <div className="brand-emblem" aria-hidden="true">✥</div>
+            <div className="brand-copy"><h1>Spearhead Companion</h1><p>Warhammer Age of Sigmar</p></div>
           </div>
+          <button className="menu-button" type="button" aria-label="Battle settings"><span /><span /><span /></button>
         </header>
 
-        <section className="battle-heading" aria-label="Current battle">
-          <h2>{battle.name}</h2>
-          <button className="menu-button" type="button" aria-label="Battle settings">
-            <span /><span /><span />
-          </button>
-        </section>
+        <section className="battle-heading" aria-label="Current battle"><h2>{battle.name}</h2></section>
 
         <section className="battle-scoreboard" aria-label="Battle scoreboard">
           <ArmyPanel side="left" {...battle.left} />
@@ -126,20 +77,14 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
         </section>
 
         <nav className="main-navigation" aria-label="Main sections">
-          {MAIN_SECTIONS.map((section) => (
-            <button
-              key={section.id}
-              type="button"
-              aria-current={activeSection === section.id ? "page" : undefined}
-              className={activeSection === section.id ? "nav-item is-active" : "nav-item"}
-              onClick={() => onSectionChange(section.id)}
-            >
-              <span className={`nav-icon nav-icon--${section.id}`} aria-hidden="true">
-                {section.id === "battle" ? "⚔" : section.id === "army" ? "♟" : "▤"}
-              </span>
-              <span>{section.label}</span>
-            </button>
-          ))}
+          {MAIN_SECTIONS.map((section) => <button key={section.id} type="button"
+            aria-current={activeSection === section.id ? "page" : undefined}
+            className={activeSection === section.id ? "nav-item is-active" : "nav-item"}
+            onClick={() => onSectionChange(section.id)}>
+            <span className={`nav-icon nav-icon--${section.id}`} aria-hidden="true">
+              {section.id === "battle" ? "⚔" : section.id === "army" ? "♟" : "▤"}
+            </span><span>{section.label}</span>
+          </button>)}
         </nav>
 
         <section className="section-placeholder" aria-live="polite">
