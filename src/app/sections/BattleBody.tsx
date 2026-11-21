@@ -312,8 +312,17 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
   useEffect(() => { setViewedArmy(turn); }, [turn]);
   const currentIndex = phases.findIndex((item) => item.id === phase);
   const isViewingCurrent = phase === viewedPhase;
+  const isViewingActiveArmy = viewedArmy === turn;
+  const canNavigatePhases = isViewingActiveArmy;
+
+  const returnToActiveView = () => {
+    setViewedArmy(turn);
+    setViewedPhase(phase);
+    setTurnMenuOpen(false);
+  };
 
   const stepPhase = (direction: -1 | 1) => {
+    if (!canNavigatePhases) return;
     const nextIndex = currentIndex + direction;
     if (nextIndex >= 0 && nextIndex < phases.length) {
       const nextPhase = phases[nextIndex].id;
@@ -364,14 +373,15 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
         <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}><EyeIcon open={mode === "complete"} /></button>
       </div>
       <nav className="battle-phase-nav" aria-label="Battle phases">
-        {phases.map((item) => <button key={item.id} type="button" className={`${phase === item.id ? "is-current" : ""} ${viewedPhase === item.id ? "is-viewed" : ""}`} aria-current={phase === item.id ? "step" : undefined} onClick={() => setViewedPhase(item.id)}>
+        {phases.map((item) => <button key={item.id} type="button" className={`${phase === item.id ? "is-current" : ""} ${viewedPhase === item.id ? "is-viewed" : ""}`} aria-current={phase === item.id ? "step" : undefined} disabled={!canNavigatePhases} onClick={() => setViewedPhase(item.id)}>
           <span>{item.label}</span>{phase === item.id && <span className="battle-current-indicator" title="Current phase" />}
         </button>)}
       </nav>
       <div className="battle-turn-meta">Turn {turnNumber} · Round {battleRound} · Underdog: {underdog === "own" ? "Crixxit" : "Cursed Shacklehorde"}</div>
-      <div className={`battle-phase-pager ${isViewingCurrent ? "" : "is-inspecting"}`}>
-        {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
-          <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
+      <div className={`battle-phase-pager ${isViewingCurrent && isViewingActiveArmy ? "" : "is-inspecting"}`}>
+        {!isViewingActiveArmy || !isViewingCurrent
+          ? <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={returnToActiveView}>Back to active army and actual phase</button><span aria-hidden="true" /></>
+          : <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</>}
       </div>
       {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} viewedArmy={viewedArmy} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
         <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} viewedArmy={viewedArmy} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} />}
