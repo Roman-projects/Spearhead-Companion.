@@ -281,9 +281,9 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
   );
 }
 
-export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, roundStarter, leftScore, rightScore, onTurnChange, onPhaseChange, onTurnEnd, onScoreChange, onCompleteRound }: {
+export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, roundStarter, leftScore, rightScore, onPhaseChange, onTurnEnd, onScoreChange, onCompleteRound }: {
   battleRound: number; turnNumber: number; underdog: TurnSide; turn: TurnSide; phase: PhaseId; roundStarter: TurnSide; leftScore: number; rightScore: number;
-  onTurnChange: (turn: TurnSide) => void; onPhaseChange: (phase: PhaseId) => void;
+  onPhaseChange: (phase: PhaseId) => void;
   onTurnEnd: (turnNumber: number, turn: TurnSide, phase: PhaseId) => void;
   onScoreChange: (turn: TurnSide, score: number) => void;
   onCompleteRound: (nextStarter: TurnSide, result: RoundSetupResult) => void;
@@ -338,10 +338,10 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
     <div className="battle-body">
       <div className="battle-controls">
         <div className="battle-turn-picker">
-          <button type="button" className="battle-turn-list-button" aria-expanded={turnMenuOpen} aria-haspopup="listbox" onClick={() => setTurnMenuOpen((open) => !open)}>
+          <button type="button" className="battle-turn-list-button" aria-expanded={turnMenuOpen} aria-haspopup="listbox" aria-label="Choose army to view" onClick={() => setTurnMenuOpen((open) => !open)}>
             <span>{turn === "own" ? "Your turn" : "Opponent’s turn"}</span><span className="battle-chevron" aria-hidden="true">⌄</span>
           </button>
-          {turnMenuOpen && <div className="battle-turn-menu" role="listbox" aria-label="Select turn">
+          {turnMenuOpen && <div className="battle-turn-menu" role="listbox" aria-label="Choose army to view">
             <button type="button" role="option" aria-selected={turn === "own"} onClick={() => { onTurnChange("own"); setTurnMenuOpen(false); }}>Your turn</button>
             <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { onTurnChange("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
           </div>}
