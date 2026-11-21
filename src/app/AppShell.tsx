@@ -116,6 +116,7 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
             turn={battleState.turn}
             phase={battleState.phase}
             roundStarter={battleState.roundStarter}
+            onTurnChange={(turn) => onBattleStateChange({ ...battleState, turn })}
             leftScore={battleState.leftScore}
             rightScore={battleState.rightScore}
             onPhaseChange={(phase) => onBattleStateChange({ ...battleState, phase })}
