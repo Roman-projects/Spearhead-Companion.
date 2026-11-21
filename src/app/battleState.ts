@@ -8,6 +8,12 @@ export interface BattleState {
   leftScore: number;
   rightScore: number;
   turn: TurnSide;
+  roundStarter: TurnSide;
+  priorityWinner: TurnSide | null;
+  seizedInitiative: boolean;
+  doubleTurn: boolean;
+  tacticsDrawBlocked: boolean;
+  tacticsCardsRecovered: number;
   phase: PhaseId;
 }
 
