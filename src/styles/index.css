@@ -53,38 +53,59 @@ button { font: inherit; cursor: pointer; }
   align-items: stretch; gap: 0; margin: 28px 22px 26px; min-height: 230px;
 }
 .army-banner {
-  min-width: 0; min-height: 220px; display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; padding: 20px 24px; border: 2px solid #b99b68;
-  background: linear-gradient(90deg,rgba(22,13,10,.91),rgba(47,28,19,.84));
-  box-shadow: 0 7px 16px #0009,inset 0 0 24px #0009;
+  position: relative; min-width: 0; min-height: 220px; display: block;
+  padding: 18px 24px 14px; border: 2px solid #55514a;
+  background: rgba(35,34,32,.68);
+  box-shadow: inset 0 0 18px rgba(0,0,0,.58);
+  transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
 }
-.army-banner--skaven {
-  border-color: #e5ad4c; border-right-width: 1px;
+.army-banner--left { border-right-width: 1px; text-align: left; }
+.army-banner--right { border-left-width: 1px; text-align: right; }
+.army-banner.is-turn-active {
+  z-index: 1;
+  border-color: #e5ad4c;
   background: linear-gradient(90deg,rgba(58,25,15,.94),rgba(34,20,15,.88));
-  box-shadow: 0 0 15px rgba(255,174,52,.42),inset 0 0 25px #0009;
+  box-shadow:
+    0 0 5px 2px rgba(255,190,75,.88),
+    0 0 16px 5px rgba(255,174,52,.56),
+    0 0 30px 8px rgba(255,153,37,.25),
+    inset 0 0 22px rgba(0,0,0,.55);
 }
-.army-banner--nighthaunt {
-  border-color: #b99b68; border-left-width: 1px;
-  background: linear-gradient(90deg,rgba(15,40,38,.86),rgba(8,24,23,.94));
+.army-banner.is-turn-inactive {
+  border-color: #45433f;
+  background: linear-gradient(135deg,rgba(38,38,36,.78),rgba(23,23,22,.82));
+  box-shadow: inset 0 0 18px rgba(0,0,0,.62);
 }
-.army-details { min-width: 0; flex: 1; }
+.army-heading { position: relative; z-index: 1; min-width: 0; }
 .faction-name {
-  display: flex; align-items: center; gap: 9px; margin: 0 0 9px; padding-bottom: 8px;
-  border-bottom: 1px solid #c39b5b; font-size: clamp(.72rem,1.2vw,1.05rem); font-weight: 600;
+  display: flex; align-items: center; gap: 8px; margin: 0 0 5px; padding-bottom: 5px;
+  border-bottom: 1px solid rgba(195,155,91,.78); font-size: clamp(.72rem,1.2vw,1.05rem); font-weight: 600;
 }
-.faction-name span { font-size: 1.35em; }
-.army-details h3 { margin: 0; font-size: clamp(1.05rem,2vw,1.8rem); line-height: 1.12; font-weight: 600; overflow-wrap: break-word; }
-.army-details--right { text-align: right; }
-.army-details--right .faction-name { justify-content: flex-end; }
+.army-banner--right .faction-name { justify-content: flex-end; }
+.faction-name span { font-size: 1.25em; }
+.army-heading h3 { margin: 0; font-size: clamp(1.02rem,1.9vw,1.7rem); line-height: 1.12; font-weight: 600; overflow-wrap: break-word; }
+.army-status-tags {
+  position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px;
+}
+.army-banner--right .army-status-tags { justify-content: flex-end; }
+.army-status-tag {
+  display: inline-flex; align-items: center; min-height: 19px; padding: 2px 7px;
+  border: 1px solid rgba(207,170,104,.58); border-radius: 3px;
+  color: #f0d7a5; background: rgba(12,11,10,.72);
+  font-family: Arial,sans-serif; font-size: .62rem; font-weight: 700; letter-spacing: .025em;
+}
 .army-score {
-  z-index: 1; flex: 0 0 auto; min-width: 54px; padding: 6px 8px; color: #f8e9c8;
-  background: rgba(10,10,10,.72); border: 1px solid rgba(177,131,70,.5);
-  text-align: center; font-family: Georgia,serif; font-size: clamp(2rem,3.7vw,3.4rem);
-  font-weight: 700; text-shadow: 0 2px 5px #000;
+  position: absolute; z-index: 2; bottom: 10px; min-width: 42px; padding: 1px 7px;
+  color: #f8e9c8; background: rgba(10,10,10,.76); border: 1px solid rgba(177,131,70,.52);
+  text-align: center; font-family: Georgia,serif; font-size: clamp(1.9rem,3.4vw,3.1rem);
+  font-weight: 700; line-height: 1.1; text-shadow: 0 2px 5px #000;
 }
+.army-banner--left .army-score { left: 75%; transform: translateX(-50%); }
+.army-banner--right .army-score { right: 75%; transform: translateX(50%); }
+
 .round-spear {
-  position: absolute; z-index: 3; left: 50%; top: 50%; width: clamp(48px,6vw,76px);
-  height: 118%; transform: translate(-50%,-50%); display: flex; align-items: center; justify-content: center;
+  position: absolute; z-index: 4; left: 50%; top: 50%; width: clamp(48px,6vw,76px);
+  height: 125%; transform: translate(-50%,-50%); display: flex; align-items: center; justify-content: center;
   pointer-events: none; filter: drop-shadow(0 4px 5px #000c);
 }
 .spear-art { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
@@ -128,18 +149,17 @@ button { font: inherit; cursor: pointer; }
   .battle-heading h2 { font-size: clamp(1rem,4.2vw,1.35rem); }
   .menu-button { width: 40px; height: 38px; border-radius: 8px; gap: 3px; }
   .menu-button span { width: 5px; height: 5px; }
-  .battle-scoreboard {
-    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-    margin: 16px 10px 16px; min-height: 142px;
-  }
-  .army-banner { min-height: 142px; padding: 10px 8px; gap: 5px; }
-  .army-banner--skaven { padding-right: 12px; }
-  .army-banner--nighthaunt { padding-left: 12px; }
-  .faction-name { gap: 4px; margin-bottom: 6px; padding-bottom: 5px; font-size: clamp(.48rem,2.15vw,.65rem); }
+  .battle-scoreboard { grid-template-columns: minmax(0,1fr) minmax(0,1fr); margin: 16px 10px 16px; min-height: 142px; }
+  .army-banner { min-height: 142px; padding: 10px 8px 12px; }
+  .army-banner--left { padding-right: 12px; }
+  .army-banner--right { padding-left: 12px; }
+  .faction-name { gap: 4px; margin-bottom: 5px; padding-bottom: 4px; font-size: clamp(.48rem,2.15vw,.65rem); }
   .faction-name span { font-size: 1.15em; }
-  .army-details h3 { font-size: clamp(.68rem,3vw,.92rem); line-height: 1.14; }
-  .army-score { min-width: 29px; padding: 4px 3px; font-size: clamp(1.35rem,6vw,2rem); }
-  .round-spear { width: 48px; height: 120%; }
+  .army-heading h3 { font-size: clamp(.68rem,3vw,.92rem); line-height: 1.14; }
+  .army-status-tags { margin-top: 5px; gap: 3px; }
+  .army-status-tag { min-height: 16px; padding: 1px 4px; font-size: .48rem; }
+  .army-score { bottom: 7px; min-width: 28px; padding: 1px 4px; font-size: clamp(1.35rem,6vw,1.85rem); }
+  .round-spear { width: 48px; height: 125%; }
   .round-medallion { width: 43px; border-width: 3px; }
   .round-caption { font-size: .36rem; }
   .round-medallion strong { font-size: 1.55rem; }
@@ -153,7 +173,7 @@ button { font: inherit; cursor: pointer; }
   .brand-copy p { font-size: .46rem; }
   .battle-scoreboard { margin-left: 7px; margin-right: 7px; }
   .army-banner { padding-left: 5px; padding-right: 5px; }
-  .army-details h3 { font-size: .64rem; }
+  .army-heading h3 { font-size: .64rem; }
   .faction-name { font-size: .45rem; }
   .army-score { min-width: 25px; font-size: 1.25rem; }
   .round-spear { width: 42px; }
