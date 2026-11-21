@@ -152,21 +152,20 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
           {!isCollapsed && <div className="battle-action-list">
             {block.items.map((item, index) => {
               const unavailable = item.includes("(unavailable)") || phase !== currentPhase;
-              const itemKey = `${phase}-${item.replace(" (unavailable)", "")}`;
               const cleanItem = item.replace(" (unavailable)", "");
+              const itemKey = `${phase}-${cleanItem}`;
               const isExpanded = !!expandedItems[itemKey];
               const isMovement = block.heading === "Movement";
               const isWeapon = block.heading === "Weapons" && (phase === "shooting" || phase === "combat");
-              const actionLabel = block.heading === "Charge" ? "Charge" : block.heading === "Abilities" ? "Use" : null;
+              const actionLabel = block.heading === "Charge" || block.heading === "Abilities" ? (block.heading === "Charge" ? "Charge" : "Use") : null;
               const movementOptions = ["Normal Move", "Run · Move + 1D6", "Retreat · 1D3 mortal damage"];
               const weaponOptions = phase === "shooting" ? ["Slings", "Poisoned Stars"] : ["Melee weapon profile"];
-              const options = isMovement ? movementOptions : isWeapon ? weaponOptions : [];
               const unitName = isMovement ? cleanItem.split(" · ")[0] : cleanItem;
-              const isGroupUsed = options.some((option) => usedActions[`${itemKey}-${option}`]);
+              const groupUsed = movementOptions.some((option) => usedActions[`${itemKey}-${option}`]);
               const canUse = !!actionLabel && !unavailable;
-              return <article className={`battle-action-card battle-action-card-expandable ${unavailable ? "is-unavailable" : ""} ${usedActions[itemKey] || isGroupUsed ? "is-used" : ""}`} key={itemKey}>
+              return <article className={`battle-action-card battle-action-card-expandable ${unavailable ? "is-unavailable" : ""} ${usedActions[itemKey] || groupUsed ? "is-used" : ""}`} key={itemKey}>
                 <div className="battle-action-main">
-                  <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : usedActions[itemKey] || isGroupUsed ? "✓" : "◆"}</span>
+                  <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : usedActions[itemKey] || groupUsed ? "✓" : "◆"}</span>
                   <button type="button" className="battle-item-toggle" aria-expanded={isExpanded} onClick={() => setExpandedItems((value) => ({ ...value, [itemKey]: !isExpanded }))}>
                     <span className="battle-action-name">{unitName}</span><span className="battle-item-chevron" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
                   </button>
@@ -176,9 +175,17 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
                 {isExpanded && <div className="battle-item-details">
                   {isMovement ? <><p>Move characteristic: 7”</p><div className="battle-option-list">{movementOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
-                    const optionUsed = !!usedActions[optionKey] || isGroupUsed;
-                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || isGroupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                    const optionUsed = !!usedActions[optionKey] || groupUsed;
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || groupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
                   })}</div></> :
+                  isWeapon ? <div className="battle-option-list">{(phase === "shooting" ? weaponOptions : weaponOptions).map((option) => {
+                    const optionKey = `${itemKey}-${option}`;
+                    const optionUsed = !!usedActions[optionKey];
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                  })}</div> : <p>Information will be added here.</p>}
+                </div>}
+              </article>;
+            })}</div></> :
                   isWeapon ? <div className="battle-option-list">{weaponOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
                     const optionUsed = !!usedActions[optionKey];
@@ -281,7 +288,7 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
       {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} /> :
-        <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={() => {}} onFinishTurn={finishTurn} />}
+        <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} />}
       {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
   );
