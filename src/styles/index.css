@@ -302,3 +302,16 @@ body { overscroll-behavior:none; }
  .battle-score-controls button { width:32px; height:32px; }
  .battle-round-transition { padding:14px; }
 }
+
+/* Expandable individual battle actions */
+.battle-action-card-expandable { display:block; padding:0; overflow:hidden; }
+.battle-action-main { min-height:54px; display:flex; align-items:center; gap:9px; padding:10px 12px; }
+.battle-item-toggle { flex:1 1 auto; min-width:0; min-height:34px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:3px 0; border:0; color:inherit; background:transparent; text-align:left; font:inherit; }
+.battle-item-toggle .battle-action-name { overflow-wrap:anywhere; }
+.battle-item-chevron { flex:0 0 auto; color:#d6a64d; font-size:1.05rem; font-weight:700; }
+.battle-item-details { padding:11px 14px 13px 29px; border-top:1px solid rgba(185,143,75,.24); color:#bdb09a; background:rgba(0,0,0,.13); font: .74rem/1.45 Arial,sans-serif; }
+.battle-use-button:disabled { opacity:.28; cursor:not-allowed; }
+@media(max-width:760px) {
+ .battle-action-main { min-height:46px; padding:8px 10px; gap:8px; }
+ .battle-item-details { padding:10px 12px 12px 26px; }
+}
