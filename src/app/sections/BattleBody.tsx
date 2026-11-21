@@ -119,7 +119,6 @@ export function BattleBody() {
   const [mode, setMode] = useState<ViewMode>("reduced");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
   const currentIndex = phases.findIndex((item) => item.id === currentPhase);
-  const viewedIndex = phases.findIndex((item) => item.id === viewedPhase);
   const isViewingCurrent = currentPhase === viewedPhase;
 
   const stepPhase = (direction: -1 | 1) => {
