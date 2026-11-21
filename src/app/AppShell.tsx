@@ -88,7 +88,7 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
           </button>)}
         </nav>
 
-        {activeSection === "battle" ? <BattleBody /> : (
+        {activeSection === "battle" ? <BattleBody battleRound={battle.round} /> : (
           <section className="section-placeholder" aria-live="polite">
             <h2>{MAIN_SECTIONS.find((section) => section.id === activeSection)?.label}</h2>
             <p>Section content will be built here.</p>
