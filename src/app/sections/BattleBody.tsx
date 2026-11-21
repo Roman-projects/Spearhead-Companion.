@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 
 type PhaseId = "hero" | "movement" | "shooting" | "charge" | "combat" | "end";
 type TurnSide = "own" | "opponent";
@@ -125,7 +126,7 @@ export function BattleBody({ battleRound }: { battleRound: number }) {
     const nextIndex = currentIndex + direction;
     if (nextIndex >= 0 && nextIndex < phases.length) {
       const nextPhase = phases[nextIndex].id;
-      setCurrentPhase(nextPhase);
+      onPhaseChange(nextPhase);
       setViewedPhase(nextPhase);
     } else if (direction === 1 && currentPhase === "end") {
       setTurn((value) => value === "own" ? "opponent" : "own");
@@ -146,8 +147,8 @@ export function BattleBody({ battleRound }: { battleRound: number }) {
             <span>{turn === "own" ? "Your turn" : "Opponent’s turn"}</span><span className="battle-chevron" aria-hidden="true">⌄</span>
           </button>
           {turnMenuOpen && <div className="battle-turn-menu" role="listbox" aria-label="Select turn">
-            <button type="button" role="option" aria-selected={turn === "own"} onClick={() => { setTurn("own"); setTurnMenuOpen(false); }}>Your turn</button>
-            <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { setTurn("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
+            <button type="button" role="option" aria-selected={turn === "own"} onClick={() => { onTurnChange("own"); setTurnMenuOpen(false); }}>Your turn</button>
+            <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { onTurnChange("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
           </div>}
         </div>
         <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}>
