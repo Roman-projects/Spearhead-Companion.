@@ -1,0 +1,59 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #171717;
+  background: #f5f5f5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-root {
+  min-height: 100vh;
+}
+
+.app-header,
+.main-navigation,
+.section-placeholder {
+  padding: 1rem;
+}
+
+.app-header h1,
+.section-placeholder h2,
+.section-placeholder p {
+  margin: 0;
+}
+
+.main-navigation {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  padding: 0.65rem 1rem;
+}
+
+.nav-item.is-active {
+  font-weight: 700;
+}
+
+.section-placeholder {
+  padding-top: 2rem;
+}
