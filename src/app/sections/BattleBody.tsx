@@ -105,7 +105,6 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
   const [priorityRollConfirmed, setPriorityRollConfirmed] = useState(false);
   const [nextStarter, setNextStarter] = useState<TurnSide>("own");
   const [underdogChoice, setUnderdogChoice] = useState<TurnSide | null>(null);
-  const [underdogChecked, setUnderdogChecked] = useState(false);
   const [twistDrawn, setTwistDrawn] = useState(false);
   const [tacticsRecoveryConfirmed, setTacticsRecoveryConfirmed] = useState(false);
 
@@ -120,7 +119,6 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
       setPriorityRollConfirmed(false);
       setNextStarter("own");
       setUnderdogChoice(null);
-      setUnderdogChecked(false);
       setTwistDrawn(false);
       setTacticsRecoveryConfirmed(false);
     }
@@ -135,7 +133,6 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
     const scoreUnderdog: TurnSide | null = leftScore === rightScore ? null : leftScore < rightScore ? "own" : "opponent";
     const tiedScores = scoreUnderdog === null;
     const resolvedUnderdog = scoreUnderdog ?? underdogChoice;
-    const underdogName = resolvedUnderdog === "own" ? "Crixxit" : "Cursed Shacklehorde";
     const steps = [
       { title: "Priority roll", body: "Roll for priority to determine who gets to choose which army starts the new battle round." },
       { title: "Choose who starts", body: "" },
