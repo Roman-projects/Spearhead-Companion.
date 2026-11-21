@@ -220,7 +220,7 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
       setViewedPhase("hero");
     } else {
       onRoundChange(battleRound + 1);
-      onTurnChange("own");
+      onTurnChange(nextTurn ?? "own");
       onPhaseChange("hero");
       setViewedPhase("hero");
     }
