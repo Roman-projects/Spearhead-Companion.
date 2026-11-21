@@ -93,6 +93,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
   const [scored, setScored] = useState(false);
   const [scoringOpen, setScoringOpen] = useState(false);
   const [transitionStep, setTransitionStep] = useState<number | null>(null);
+  const [priorityWinner, setPriorityWinner] = useState<TurnSide>("own");
   const [nextStarter, setNextStarter] = useState<TurnSide>("own");
   const [underdogChecked, setUnderdogChecked] = useState(false);
   const [cardsChecked, setCardsChecked] = useState(false);
@@ -104,6 +105,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
     setScored(false);
     setScoringOpen(false);
     setTransitionStep(null);
+    setPriorityWinner("own");
     setNextStarter("own");
     setUnderdogChecked(false);
     setCardsChecked(false);
@@ -116,7 +118,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
   if (phase === "end" && transitionStep !== null) {
     const steps = [
       { title: "Priority roll", body: "Make the priority roll to determine who has won the initiative for the new battle round." },
-      { title: "Choose the first turn", body: "The winner of the priority roll chooses which player takes the first turn of the new battle round." },
+      { title: "Choose the first turn", body: "The winner of the priority roll chooses which army takes the first turn of the new battle round." },
       { title: "Determine the Underdog", body: "Check both players’ victory points and determine the Underdog. If the result requires a tie-break, make the appropriate roll-off." },
       { title: "Twist and battle tactics cards", body: "Draw the new Twist card. Draw or discard and replenish battle tactics cards as required by the battlepack and its conditions." },
     ];
@@ -126,11 +128,18 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
       <h2>{step.title}</h2>
       <p>{step.body}</p>
       <div className="battle-transition-progress">{steps.map((item, index) => <span key={item.title} className={index <= transitionStep ? "is-complete" : ""} />)}</div>
-      {transitionStep === 1 && <div className="battle-choice-row">
-        <button type="button" className={nextStarter === "own" ? "is-selected" : ""} onClick={() => setNextStarter("own")}>Your turn first</button>
-        <button type="button" className={nextStarter === "opponent" ? "is-selected" : ""} onClick={() => setNextStarter("opponent")}>Opponent first</button>
+      {transitionStep === 0 && <div className="battle-choice-row">
+        <button type="button" className={priorityWinner === "own" ? "is-selected" : ""} onClick={() => setPriorityWinner("own")}>Crixxit wins priority</button>
+        <button type="button" className={priorityWinner === "opponent" ? "is-selected" : ""} onClick={() => setPriorityWinner("opponent")}>Cursed Shacklehorde wins priority</button>
       </div>}
-      {transitionStep === 2 && <label className="battle-confirm-check"><input type="checkbox" checked={underdogChecked} onChange={(event) => setUnderdogChecked(event.target.checked)} /> Underdog verified (including any required tie-break)</label>}
+      {transitionStep === 1 && <>
+        <p className="battle-scoring-note">Priority winner: {priorityWinner === "own" ? "Crixxit" : "Cursed Shacklehorde"}. The winner chooses who starts.</p>
+        <div className="battle-choice-row">
+          <button type="button" className={nextStarter === "own" ? "is-selected" : ""} onClick={() => setNextStarter("own")}>Crixxit starts</button>
+          <button type="button" className={nextStarter === "opponent" ? "is-selected" : ""} onClick={() => setNextStarter("opponent")}>Cursed Shacklehorde starts</button>
+        </div>
+      </>}
+      {transitionStep === 2 && <label className="battle-confirm-check"><input type="checkbox" checked={underdogChecked} onChange={(event) => setUnderdogChecked(event.target.checked)} /> Underdog verified. Current test setting: Crixxit</label>}
       {transitionStep === 3 && <label className="battle-confirm-check"><input type="checkbox" checked={cardsChecked} onChange={(event) => setCardsChecked(event.target.checked)} /> Twist and battle tactics cards resolved</label>}
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
@@ -219,16 +228,15 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
   );
 }
 
-export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChange, onRoundChange, onScoreChange }: {
-  battleRound: number; turn: TurnSide; phase: PhaseId;
+export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, onTurnChange, onPhaseChange, onRoundChange, onTurnNumberChange, onScoreChange }: {
+  battleRound: number; turnNumber: number; underdog: TurnSide; turn: TurnSide; phase: PhaseId;
   onTurnChange: (turn: TurnSide) => void; onPhaseChange: (phase: PhaseId) => void;
-  onRoundChange: (round: number) => void; onScoreChange: (turn: TurnSide, score: number) => void;
+  onRoundChange: (round: number) => void; onTurnNumberChange: (turnNumber: number) => void; onScoreChange: (turn: TurnSide, score: number) => void;
 }) {
   const [viewedPhase, setViewedPhase] = useState<PhaseId>(phase);
   const [mode, setMode] = useState<ViewMode>("reduced");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
   const [usedActions, setUsedActions] = useState<Record<string, boolean>>({});
-  useEffect(() => { setUsedActions({}); }, [turn]);
   useEffect(() => { setViewedPhase(phase); }, [phase]);
   const currentIndex = phases.findIndex((item) => item.id === phase);
   const isViewingCurrent = phase === viewedPhase;
@@ -247,6 +255,8 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
   };
 
   const finishTurn = (nextTurn?: TurnSide) => {
+    setUsedActions({});
+    onTurnNumberChange(turnNumber + 1);
     if (turn === "own") {
       onTurnChange("opponent");
       onPhaseChange("hero");
@@ -278,6 +288,7 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
           <span>{item.label}</span>{phase === item.id && <span className="battle-current-indicator" title="Current phase" />}
         </button>)}
       </nav>
+      <div className="battle-turn-meta">Turn {turnNumber} · Round {battleRound} · Underdog: {underdog === "own" ? "Crixxit" : "Cursed Shacklehorde"}</div>
       <div className={`battle-phase-pager ${isViewingCurrent ? "" : "is-inspecting"}`}>
         {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
