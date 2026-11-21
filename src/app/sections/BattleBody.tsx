@@ -4,6 +4,14 @@ import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 type ViewMode = "reduced" | "complete";
 type ContentBlock = { heading: string; items: string[] };
 type ScoreDraft = { objectives: number; tactics: number; twist: number };
+type RoundSetupResult = {
+  priorityWinner: TurnSide;
+  seizedInitiative: boolean;
+  doubleTurn: boolean;
+  tacticsDrawBlocked: boolean;
+  tacticsCardsRecovered: number;
+  underdog: TurnSide;
+};
 
 const phases = PHASES;
 const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBlock[]; fullOwn: ContentBlock[]; fullOpponent: ContentBlock[] }> = {
@@ -80,9 +88,9 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
-  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; battleRound: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide) => void;
-}) {
+function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound, roundStarter, leftScore, rightScore, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
+  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; battleRound: number; roundStarter: TurnSide; leftScore: number; rightScore: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide, result: RoundSetupResult) => void;
+})
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
   const visibleBlocks = blocks.filter((block) => block.items.length > 0)
@@ -95,8 +103,10 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
   const [transitionStep, setTransitionStep] = useState<number | null>(null);
   const [priorityWinner, setPriorityWinner] = useState<TurnSide>("own");
   const [nextStarter, setNextStarter] = useState<TurnSide>("own");
+  const [underdogChoice, setUnderdogChoice] = useState<TurnSide | null>(null);
   const [underdogChecked, setUnderdogChecked] = useState(false);
-  const [cardsChecked, setCardsChecked] = useState(false);
+  const [twistDrawn, setTwistDrawn] = useState(false);
+  const [tacticsRecovered, setTacticsRecovered] = useState(0);
 
   useEffect(() => {
     setCollapsed({});
@@ -108,8 +118,10 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
       setTransitionStep(null);
       setPriorityWinner("own");
       setNextStarter("own");
+      setUnderdogChoice(null);
       setUnderdogChecked(false);
-      setCardsChecked(false);
+      setTwistDrawn(false);
+      setTacticsRecovered(0);
     }
   }, [phase, turn]);
 
@@ -118,35 +130,77 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
   };
 
   if (phase === "end" && transitionStep !== null) {
+    const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
+    const seizedInitiative = priorityWinner === previousSecond && nextStarter === priorityWinner;
+    const doubleTurn = nextStarter === previousSecond;
+    const scoreGap = Math.abs(leftScore - rightScore);
+    const scoreUnderdog: TurnSide | null = leftScore === rightScore ? null : leftScore < rightScore ? "own" : "opponent";
+    const resolvedUnderdog = scoreUnderdog ?? underdogChoice;
+    const tacticsDrawBlocked = seizedInitiative && !(resolvedUnderdog === nextStarter && scoreGap >= 5);
+    const winnerName = priorityWinner === "own" ? "Crixxit" : "Cursed Shacklehorde";
+    const starterName = nextStarter === "own" ? "Crixxit" : "Cursed Shacklehorde";
+    const underdogName = resolvedUnderdog === "own" ? "Crixxit" : "Cursed Shacklehorde";
     const steps = [
-      { title: "Priority roll", body: "Make the priority roll to determine who has won the initiative for the new battle round." },
-      { title: "Choose the first turn", body: "The winner of the priority roll chooses which army takes the first turn of the new battle round." },
-      { title: "Determine the Underdog", body: "Check both players’ victory points and determine the Underdog. If the result requires a tie-break, make the appropriate roll-off." },
-      { title: "Twist and battle tactics cards", body: "Draw the new Twist card. Draw or discard and replenish battle tactics cards as required by the battlepack and its conditions." },
+      { title: "Priority roll", body: "Register the winner of the priority roll for the new battle round." },
+      { title: "Choose who starts", body: "The priority winner chooses which army takes the first turn of the new battle round." },
+      { title: "Initiative and active army", body: "Check whether the player who went second last round starts again. The active army and its lists will follow the selected starter." },
+      { title: "Determine the Underdog", body: "The player with fewer victory points is the Underdog. If victory points are tied, resolve a roll-off and record its winner." },
+      { title: "Draw the Twist card", body: "Draw and register the Twist card for the new battle round." },
+      { title: "Recover Battle Tactics cards", body: "Register how many Battle Tactics cards are recovered, up to a maximum of three. Any restriction on drawing new cards is shown below." },
     ];
     const step = steps[transitionStep];
     return <section className="battle-round-transition">
-      <p className="battle-eyebrow">NEW BATTLE ROUND</p>
+      <p className="battle-eyebrow">NEW BATTLE ROUND · SETUP</p>
       <h2>{step.title}</h2>
       <p>{step.body}</p>
       <div className="battle-transition-progress">{steps.map((item, index) => <span key={item.title} className={index <= transitionStep ? "is-complete" : ""} />)}</div>
       {transitionStep === 0 && <div className="battle-choice-row">
-        <button type="button" className={priorityWinner === "own" ? "is-selected" : ""} onClick={() => setPriorityWinner("own")}>Crixxit wins priority</button>
-        <button type="button" className={priorityWinner === "opponent" ? "is-selected" : ""} onClick={() => setPriorityWinner("opponent")}>Cursed Shacklehorde wins priority</button>
+        <button type="button" className={priorityWinner === "own" ? "is-selected" : ""} onClick={() => { setPriorityWinner("own"); setNextStarter("own"); }}>Crixxit wins priority</button>
+        <button type="button" className={priorityWinner === "opponent" ? "is-selected" : ""} onClick={() => { setPriorityWinner("opponent"); setNextStarter("opponent"); }}>Cursed Shacklehorde wins priority</button>
       </div>}
       {transitionStep === 1 && <>
-        <p className="battle-scoring-note">Priority winner: {priorityWinner === "own" ? "Crixxit" : "Cursed Shacklehorde"}. The winner chooses who starts.</p>
+        <p className="battle-scoring-note">Priority winner: {winnerName}. They must choose who starts.</p>
         <div className="battle-choice-row">
-          <button type="button" className={nextStarter === "own" ? "is-selected" : ""} onClick={() => setNextStarter("own")}>Crixxit starts</button>
-          <button type="button" className={nextStarter === "opponent" ? "is-selected" : ""} onClick={() => setNextStarter("opponent")}>Cursed Shacklehorde starts</button>
+          <button type="button" className={nextStarter === priorityWinner ? "is-selected" : ""} onClick={() => setNextStarter(priorityWinner)}>Winner starts</button>
+          <button type="button" className={nextStarter !== priorityWinner ? "is-selected" : ""} onClick={() => setNextStarter(priorityWinner === "own" ? "opponent" : "own")}>Other army starts</button>
         </div>
       </>}
-      {transitionStep === 2 && <label className="battle-confirm-check"><input type="checkbox" checked={underdogChecked} onChange={(event) => setUnderdogChecked(event.target.checked)} /> Underdog verified. Current test setting: Crixxit</label>}
-      {transitionStep === 3 && <label className="battle-confirm-check"><input type="checkbox" checked={cardsChecked} onChange={(event) => setCardsChecked(event.target.checked)} /> Twist and battle tactics cards resolved</label>}
+      {transitionStep === 2 && <>
+        <p className="battle-scoring-note">Selected active army: <strong>{starterName}</strong>. Its army lists will be shown when the round starts.</p>
+        <p className="battle-scoring-note">Player who went second last round: <strong>{previousSecond === "own" ? "Crixxit" : "Cursed Shacklehorde"}</strong>.</p>
+        <p className="battle-scoring-note">{doubleTurn ? "Double turn: yes. The player who went second last round starts this round." : "Double turn: no."}</p>
+        <p className="battle-scoring-note">{seizedInitiative ? "Seizing the Initiative: yes. The previous second player won priority and chose to start." : "Seizing the Initiative: no."}</p>
+      </>}
+      {transitionStep === 3 && <>
+        {scoreUnderdog ? <p className="battle-scoring-note">Based on the current score ({leftScore}–{rightScore}), the Underdog is <strong>{underdogName}</strong>. Difference: {scoreGap} VP.</p> :
+          <><p className="battle-scoring-note">The score is tied ({leftScore}–{rightScore}). Resolve an Underdog roll-off and select the winner.</p>
+            <div className="battle-choice-row">
+              <button type="button" className={underdogChoice === "own" ? "is-selected" : ""} onClick={() => { setUnderdogChoice("own"); setUnderdogChecked(false); }}>Crixxit wins roll-off</button>
+              <button type="button" className={underdogChoice === "opponent" ? "is-selected" : ""} onClick={() => { setUnderdogChoice("opponent"); setUnderdogChecked(false); }}>Cursed Shacklehorde wins roll-off</button>
+            </div>
+          </>}
+        <label className="battle-confirm-check"><input type="checkbox" checked={underdogChecked} disabled={!scoreUnderdog && !underdogChoice} onChange={(event) => setUnderdogChecked(event.target.checked)} /> Confirm Underdog: {scoreUnderdog ? underdogName : underdogChoice ? (underdogChoice === "own" ? "Crixxit" : "Cursed Shacklehorde") : "awaiting roll-off"}</label>
+      </>}
+      {transitionStep === 4 && <label className="battle-confirm-check"><input type="checkbox" checked={twistDrawn} onChange={(event) => setTwistDrawn(event.target.checked)} /> Twist card drawn and registered</label>}
+      {transitionStep === 5 && <>
+        {seizedInitiative && <p className="battle-scoring-note">{tacticsDrawBlocked ? "Battle Tactics restriction: this army cannot draw new Battle Tactics cards this round. The exception does not apply because the player taking the initiative is not both the Underdog and at least 5 VP behind." : "Battle Tactics exception applies: the player taking the initiative is the Underdog and is at least 5 VP behind, so they may draw Battle Tactics cards."}</p>}
+        {!seizedInitiative && <p className="battle-scoring-note">No Seizing the Initiative restriction applies. Normal Battle Tactics card rules apply.</p>}
+        <div className="battle-score-row">
+          <div><strong>Cards recovered</strong><span>Choose 0–3</span></div>
+          <div className="battle-score-controls">
+            <button type="button" disabled={tacticsRecovered <= 0} onClick={() => setTacticsRecovered((value) => Math.max(0, value - 1))}>−</button>
+            <output>{tacticsRecovered}</output>
+            <button type="button" disabled={tacticsRecovered >= 3} onClick={() => setTacticsRecovered((value) => Math.min(3, value + 1))}>+</button>
+          </div>
+        </div>
+      </>}
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
-        {transitionStep < 3 ? <button type="button" className="battle-primary-button" disabled={transitionStep === 2 && !underdogChecked} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
-          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onCompleteRound(nextStarter); }}>Complete round setup</button>}
+        {transitionStep < 5 ? <button type="button" className="battle-primary-button" disabled={(transitionStep === 3 && !underdogChecked) || (transitionStep === 4 && !twistDrawn)} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
+          <button type="button" className="battle-primary-button" onClick={() => {
+            if (resolvedUnderdog === null) return;
+            onCompleteRound(nextStarter, { priorityWinner, seizedInitiative, doubleTurn, tacticsDrawBlocked, tacticsCardsRecovered: tacticsRecovered, underdog: resolvedUnderdog });
+          }}>Start Round</button>}
       </div>
     </section>;
   }
@@ -221,7 +275,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
         <div className="battle-score-total">Total this turn <strong>{draft.objectives + draft.tactics + draft.twist}</strong></div>
         <div className="battle-scoring-actions">
           <button type="button" className="battle-primary-button" disabled={scored} onClick={() => { onScore(draft.objectives + draft.tactics + draft.twist); setScored(true); }}>{scored ? "Scoring confirmed" : "Puntuar"}</button>
-          {scored && <button type="button" className="battle-primary-button" onClick={() => { if (turnNumber % 2 === 0) setTransitionStep(0); onFinishTurn(); }}>Terminar turno</button>}
+          {scored && <button type="button" className="battle-primary-button" onClick={() => { if (turnNumber % 2 === 0 && turnNumber !== 8) setTransitionStep(0); onFinishTurn(); }}>Terminar turno</button>}
         </div>
         <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
         </>}
@@ -230,11 +284,13 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
   );
 }
 
-export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, onTurnChange, onPhaseChange, onRoundChange, onTurnNumberChange, onScoreChange }: {
-  battleRound: number; turnNumber: number; underdog: TurnSide; turn: TurnSide; phase: PhaseId;
+export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, roundStarter, leftScore, rightScore, onTurnChange, onPhaseChange, onTurnEnd, onScoreChange, onCompleteRound }: {
+  battleRound: number; turnNumber: number; underdog: TurnSide; turn: TurnSide; phase: PhaseId; roundStarter: TurnSide; leftScore: number; rightScore: number;
   onTurnChange: (turn: TurnSide) => void; onPhaseChange: (phase: PhaseId) => void;
-  onRoundChange: (round: number) => void; onTurnNumberChange: (turnNumber: number) => void; onScoreChange: (turn: TurnSide, score: number) => void;
-}) {
+  onTurnEnd: (turnNumber: number, turn: TurnSide, phase: PhaseId) => void;
+  onScoreChange: (turn: TurnSide, score: number) => void;
+  onCompleteRound: (nextStarter: TurnSide, result: RoundSetupResult) => void;
+}){
   const [viewedPhase, setViewedPhase] = useState<PhaseId>(phase);
   const [mode, setMode] = useState<ViewMode>("reduced");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
@@ -258,24 +314,19 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, onT
 
   const finishTurn = () => {
     setUsedActions({});
-    onTurnNumberChange(turnNumber + 1);
-    onTurnChange(turn === "own" ? "opponent" : "own");
-    if (turnNumber % 2 === 0) {
-      // Even-numbered turns end the battle round. Keep the End of Turn
-      // section open while the round sequence is resolved.
-      onPhaseChange("end");
+    const nextTurnNumber = turnNumber + 1;
+    if (turnNumber % 2 === 1) {
+      const nextTurn = turn === "own" ? "opponent" : "own";
+      onTurnEnd(nextTurnNumber, nextTurn, "hero");
+      setViewedPhase("hero");
+    } else if (turnNumber !== 8) {
+      onTurnEnd(nextTurnNumber, turn, "end");
       setViewedPhase("end");
     } else {
-      onPhaseChange("hero");
-      setViewedPhase("hero");
+      // Turn 8 terminal handling will be added separately.
+      onTurnEnd(nextTurnNumber, turn, "end");
+      setViewedPhase("end");
     }
-  };
-
-  const completeRoundSetup = (nextStarter: TurnSide) => {
-    onRoundChange(battleRound + 1);
-    onTurnChange(nextStarter);
-    onPhaseChange("hero");
-    setViewedPhase("hero");
   };
 
   return (
@@ -302,7 +353,7 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, onT
         {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
-      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
+      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
         <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} />}
       {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
