@@ -17,6 +17,8 @@ export default function App() {
     <AppShell
       activeSection={activeSection}
       onSectionChange={setActiveSection}
+      battleState={battleState}
+      onBattleStateChange={setBattleState}
     />
   );
 }
