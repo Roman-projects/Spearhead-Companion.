@@ -2,6 +2,7 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 
 type ViewMode = "reduced" | "complete";
+type LayoutPreset = "tactical" | "total";
 type ContentBlock = { heading: string; items: string[] };
 type ScoreDraft = { objectives: number; tactics: number; twist: number };
 type RoundSetupResult = {
@@ -80,7 +81,7 @@ const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBloc
   },
 };
 
-function EyeIcon({ open }: { open: boolean }) {
+function BookIcon({ open }: { open: boolean }) {\n  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? "M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1 2.5-1.7 5.5-2 9-1v-13c-3.5-1-6.5-.7-9 1Z" : "M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1V6.5Zm0 0c2.5-1.7 5.5-2 9-1v13c-3.5-1-6.5-.7-9 1"} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 9h3M6 12h3M15 9h3M15 12h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>;\n}\n\nfunction EyeIcon({ open }: { open: boolean }) {
   return open ? (
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.4-6 9.8-6 9.8 6 9.8 6-3.4 6-9.8 6-9.8-6-9.8-6Z" fill="none" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" strokeWidth="1.8"/></svg>
   ) : (
@@ -88,8 +89,8 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound, roundStarter, leftScore, rightScore, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
-  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; battleRound: number; roundStarter: TurnSide; leftScore: number; rightScore: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide, result: RoundSetupResult) => void;
+function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPreset, battleRound, roundStarter, leftScore, rightScore, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
+  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; layoutPreset: LayoutPreset; battleRound: number; roundStarter: TurnSide; leftScore: number; rightScore: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide, result: RoundSetupResult) => void;
 }) {
   const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
   const data = phaseContent[phase];
@@ -122,7 +123,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
       setTwistDrawn(false);
       setTacticsRecoveryConfirmed(false);
     }
-  }, [phase, turn]);
+  }, [phase, turn]);\n\n  useEffect(() => {\n    const sectionState: Record<string, boolean> = {};\n    const itemState: Record<string, boolean> = {};\n    visibleBlocks.forEach((block, blockIndex) => {\n      sectionState[`${phase}-${block.heading}-${blockIndex}`] = false;\n      block.items.forEach((item) => {\n        const cleanItem = item.replace(" (unavailable)", "");\n        itemState[`${phase}-${cleanItem}`] = layoutPreset === "total";\n      });\n    });\n    setCollapsed(sectionState);\n    setExpandedItems(itemState);\n  }, [phase, turn, layoutPreset]);
 
   const updateDraft = (key: keyof ScoreDraft, delta: number, max: number) => {
     setDraft((value) => ({ ...value, [key]: Math.max(0, Math.min(max, value[key] + delta)) }));
@@ -265,7 +266,7 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
   onCompleteRound: (nextStarter: TurnSide, result: RoundSetupResult) => void;
 }){
   const [viewedPhase, setViewedPhase] = useState<PhaseId>(phase);
-  const [mode, setMode] = useState<ViewMode>("reduced");
+  const [mode, setMode] = useState<ViewMode>("reduced");\n  const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>("tactical");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
   const [usedActions, setUsedActions] = useState<Record<string, boolean>>({});
   useEffect(() => { setViewedPhase(phase); }, [phase]);
@@ -319,7 +320,7 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
             <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { onTurnChange("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
           </div>}
         </div>
-        <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}><EyeIcon open={mode === "complete"} /></button>
+        <button type="button" className="battle-view-toggle battle-book-toggle" aria-label={layoutPreset === "tactical" ? "Vista táctica. Switch to vista total" : "Vista total. Switch to vista táctica"} title={layoutPreset === "tactical" ? "Vista táctica" : "Vista total"} aria-pressed={layoutPreset === "total"} onClick={() => setLayoutPreset((value) => value === "tactical" ? "total" : "tactical")}><BookIcon open={layoutPreset === "total"} /></button>\n        <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}><EyeIcon open={mode === "complete"} /></button>
       </div>
       <nav className="battle-phase-nav" aria-label="Battle phases">
         {phases.map((item) => <button key={item.id} type="button" className={`${phase === item.id ? "is-current" : ""} ${viewedPhase === item.id ? "is-viewed" : ""}`} aria-current={phase === item.id ? "step" : undefined} onClick={() => setViewedPhase(item.id)}>
@@ -331,7 +332,7 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
         {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
-      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
+      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
         <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} />}
       {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
