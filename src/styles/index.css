@@ -8,294 +8,159 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-optical-sizing: auto;
 }
-
 * { box-sizing: border-box; }
-
-html, body, #root {
-  min-width: 320px;
-  min-height: 100%;
-  margin: 0;
-}
-
+html, body, #root { min-width: 320px; min-height: 100%; margin: 0; }
 body { min-height: 100vh; }
 button { font: inherit; cursor: pointer; }
 
-.app-root {
-  position: relative;
-  min-height: 100vh;
-  isolation: isolate;
-  overflow: hidden;
-  background: #171411;
-}
-
+.app-root { position: relative; min-height: 100vh; isolation: isolate; overflow: hidden; background: #171411; }
 .app-backdrop {
-  position: fixed;
-  z-index: -2;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(12, 11, 10, .48), rgba(12, 10, 8, .68)),
-    url('/images/city-of-ash-background.webp') center / cover no-repeat,
-    #211b16;
-  transform: scale(1.015);
+  position: fixed; z-index: -2; inset: 0;
+  background: linear-gradient(180deg, rgba(12,11,10,.58), rgba(12,10,8,.76)),
+    url('/images/city-of-ash-background.webp') center / cover no-repeat, #211b16;
 }
-
-.app-content {
-  position: relative;
-  min-height: 100vh;
-  background: linear-gradient(180deg, rgba(14, 13, 12, .48), rgba(14, 12, 11, .28) 48%, rgba(14, 12, 11, .72));
-}
+.app-content { position: relative; min-height: 100vh; background: linear-gradient(180deg, rgba(14,13,12,.35), rgba(14,13,12,.24) 48%, rgba(14,13,12,.68)); }
 
 .brand-header {
-  min-height: 116px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 14px 30px;
-  border-bottom: 2px solid rgba(190, 145, 70, .72);
-  background: linear-gradient(90deg, rgba(13, 12, 11, .92), rgba(21, 18, 15, .72));
-  box-shadow: 0 3px 18px rgba(0,0,0,.5);
+  min-height: 92px; display: flex; align-items: center; gap: 16px; padding: 10px 26px;
+  border-bottom: 2px solid rgba(190,145,70,.72);
+  background: linear-gradient(90deg, rgba(13,12,11,.94), rgba(21,18,15,.76));
+  box-shadow: 0 3px 18px #0008;
 }
-
 .brand-emblem {
-  width: 94px;
-  height: 94px;
-  display: grid;
-  place-items: center;
-  border: 2px solid #b98a3e;
-  border-radius: 50%;
-  color: #e2b65f;
-  font-size: 64px;
-  line-height: 1;
-  text-shadow: 0 0 14px rgba(230, 166, 57, .55);
+  width: 70px; height: 70px; display: grid; place-items: center; border: 2px solid #b98a3e;
+  border-radius: 50%; color: #e2b65f; font-size: 48px; line-height: 1;
+  text-shadow: 0 0 14px rgba(230,166,57,.55);
 }
-
-.brand-copy h1 {
-  margin: 0;
-  color: #e8c477;
-  font-size: clamp(1.4rem, 3vw, 2.65rem);
-  font-weight: 600;
-  letter-spacing: .045em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 4px #000;
-}
-
-.brand-copy p {
-  margin: 2px 0 0;
-  color: #e4c17c;
-  font-size: clamp(.72rem, 1.5vw, 1.25rem);
-  letter-spacing: .16em;
-  text-align: center;
-  text-transform: uppercase;
-}
+.brand-copy h1 { margin: 0; color: #e8c477; font-size: clamp(1.2rem,2.6vw,2.25rem); font-weight: 600; letter-spacing: .045em; text-transform: uppercase; text-shadow: 0 2px 4px #000; }
+.brand-copy p { margin: 2px 0 0; color: #e4c17c; font-size: clamp(.65rem,1.25vw,1rem); letter-spacing: .16em; text-transform: uppercase; }
 
 .battle-heading {
-  min-height: 112px;
-  margin: 0 28px;
-  padding: 12px 4px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 28px;
-  border-bottom: 1px solid rgba(186, 145, 83, .55);
+  min-height: 76px; margin: 0 24px; padding: 8px 4px; display: flex; align-items: center;
+  justify-content: flex-end; gap: 20px; border-bottom: 1px solid rgba(186,145,83,.55);
 }
-
-.battle-heading h2 {
-  margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2.7rem);
-  font-weight: 500;
-  text-shadow: 0 2px 5px #000;
-}
-
+.battle-heading h2 { margin: 0; font-size: clamp(1.2rem,2.5vw,2.1rem); font-weight: 500; text-shadow: 0 2px 5px #000; }
 .menu-button {
-  width: 78px;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  border: 2px solid #a77c42;
-  border-radius: 14px;
-  color: #f3dfb4;
-  background: linear-gradient(145deg, rgba(60, 48, 35, .95), rgba(22, 19, 16, .96));
-  box-shadow: inset 0 0 0 2px rgba(0,0,0,.45), 0 3px 8px #0008;
+  width: 58px; height: 54px; display: flex; align-items: center; justify-content: center; gap: 4px;
+  border: 2px solid #a77c42; border-radius: 12px; background: linear-gradient(145deg,rgba(60,48,35,.95),rgba(22,19,16,.96));
+  box-shadow: inset 0 0 0 2px #0007, 0 3px 8px #0008;
 }
-.menu-button span { width: 8px; height: 8px; border-radius: 50%; background: #e8d2a6; }
+.menu-button span { width: 7px; height: 7px; border-radius: 50%; background: #e8d2a6; }
 
 .battle-scoreboard {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(120px, 180px) minmax(0, 1fr);
-  align-items: center;
-  gap: 0;
-  margin: 44px 28px 42px;
-  min-height: 310px;
+  position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  align-items: stretch; gap: 0; margin: 28px 22px 26px; min-height: 230px;
 }
-
 .army-banner {
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 28px 34px;
-  border: 3px solid #b99b68;
-  background: linear-gradient(90deg, rgba(22, 13, 10, .82), rgba(47, 28, 19, .66));
-  box-shadow: 0 8px 18px #0009, inset 0 0 24px rgba(0,0,0,.58);
-  clip-path: polygon(3% 0, 97% 0, 100% 8%, 100% 92%, 97% 100%, 3% 100%, 0 92%, 0 8%);
+  min-width: 0; min-height: 220px; display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 20px 24px; border: 2px solid #b99b68;
+  background: linear-gradient(90deg,rgba(22,13,10,.91),rgba(47,28,19,.84));
+  box-shadow: 0 7px 16px #0009,inset 0 0 24px #0009;
 }
 .army-banner--skaven {
-  border-color: #e5ad4c;
-  box-shadow: 0 0 18px rgba(255, 174, 52, .62), inset 0 0 25px rgba(0,0,0,.6);
-  background: linear-gradient(90deg, rgba(58, 25, 15, .86), rgba(34, 20, 15, .68));
+  border-color: #e5ad4c; border-right-width: 1px;
+  background: linear-gradient(90deg,rgba(58,25,15,.94),rgba(34,20,15,.88));
+  box-shadow: 0 0 15px rgba(255,174,52,.42),inset 0 0 25px #0009;
 }
 .army-banner--nighthaunt {
-  background: linear-gradient(90deg, rgba(15, 40, 38, .7), rgba(8, 24, 23, .86));
+  border-color: #b99b68; border-left-width: 1px;
+  background: linear-gradient(90deg,rgba(15,40,38,.86),rgba(8,24,23,.94));
 }
 .army-details { min-width: 0; flex: 1; }
 .faction-name {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 0 0 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #c39b5b;
-  font-size: clamp(.8rem, 1.5vw, 1.35rem);
-  font-weight: 600;
+  display: flex; align-items: center; gap: 9px; margin: 0 0 9px; padding-bottom: 8px;
+  border-bottom: 1px solid #c39b5b; font-size: clamp(.72rem,1.2vw,1.05rem); font-weight: 600;
 }
-.faction-name span { font-size: 1.5em; }
-.army-details h3 {
-  margin: 0;
-  font-size: clamp(1.35rem, 2.8vw, 2.7rem);
-  line-height: 1.12;
-  font-weight: 600;
-}
+.faction-name span { font-size: 1.35em; }
+.army-details h3 { margin: 0; font-size: clamp(1.05rem,2vw,1.8rem); line-height: 1.12; font-weight: 600; overflow-wrap: break-word; }
 .army-details--right { text-align: right; }
 .army-details--right .faction-name { justify-content: flex-end; }
 .army-score {
-  flex: 0 0 auto;
-  min-width: 100px;
-  padding: 10px 14px;
-  color: #f8e9c8;
-  background: rgba(10, 10, 10, .62);
-  border: 1px solid rgba(177, 131, 70, .5);
-  text-align: center;
-  font-family: Georgia, serif;
-  font-size: clamp(2.8rem, 5vw, 5rem);
-  font-weight: 700;
-  text-shadow: 0 2px 5px #000;
+  z-index: 1; flex: 0 0 auto; min-width: 54px; padding: 6px 8px; color: #f8e9c8;
+  background: rgba(10,10,10,.72); border: 1px solid rgba(177,131,70,.5);
+  text-align: center; font-family: Georgia,serif; font-size: clamp(2rem,3.7vw,3.4rem);
+  font-weight: 700; text-shadow: 0 2px 5px #000;
 }
-.round-marker {
-  z-index: 2;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: -40px -28px;
-  color: #f5d58c;
-  text-shadow: 0 3px 4px #000;
-  pointer-events: none;
+.round-spear {
+  position: absolute; z-index: 3; left: 50%; top: 50%; width: clamp(48px,6vw,76px);
+  height: 118%; transform: translate(-50%,-50%); display: flex; align-items: center; justify-content: center;
+  pointer-events: none; filter: drop-shadow(0 4px 5px #000c);
 }
-.round-label {
-  z-index: 1;
-  width: 100%;
-  padding: 6px 4px;
-  border: 2px solid #d19b3f;
-  background: linear-gradient(#392b18, #17130e);
-  text-align: center;
-  font-size: clamp(.85rem, 1.5vw, 1.4rem);
-  font-weight: 700;
-  text-transform: uppercase;
+.spear-art { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.round-medallion {
+  position: relative; z-index: 1; width: clamp(48px,5.4vw,68px); aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 4px ridge #c38e34; border-radius: 50%;
+  color: #21190e; background: radial-gradient(circle,#f6e7c6 0%,#b6a17a 72%,#5b4829 100%);
+  box-shadow: 0 0 15px rgba(224,163,55,.55),0 5px 9px #000a;
 }
-.round-number {
-  width: clamp(100px, 10vw, 148px);
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  margin-top: -2px;
-  border: 8px ridge #c38e34;
-  border-radius: 50%;
-  color: #1a1711;
-  background: radial-gradient(circle, #f6e7c6 0%, #b6a17a 70%, #5b4829 100%);
-  font-family: Georgia, serif;
-  font-size: clamp(3.5rem, 7vw, 6rem);
-  font-weight: 700;
-  box-shadow: 0 0 22px rgba(224, 163, 55, .55), 0 8px 12px #000a;
-}
+.round-caption { color: #5a3c16; font-size: clamp(.42rem,.65vw,.58rem); font-weight: 800; line-height: 1; text-transform: uppercase; }
+.round-medallion strong { font-family: Georgia,serif; font-size: clamp(1.55rem,3vw,2.4rem); line-height: .95; }
 
 .main-navigation {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 28px;
-  border-bottom: 2px solid rgba(188, 145, 75, .75);
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; margin: 0 22px;
+  border-bottom: 2px solid rgba(188,145,75,.75);
 }
 .nav-item {
-  min-height: 116px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 16px 12px;
-  border: 2px solid rgba(174, 151, 117, .72);
-  border-bottom: 0;
-  border-radius: 12px 12px 0 0;
-  color: #e6d4b3;
-  background: linear-gradient(145deg, rgba(34, 31, 27, .92), rgba(15, 14, 13, .94));
-  font-size: clamp(1.15rem, 2.5vw, 2.35rem);
-  font-weight: 600;
-  text-shadow: 0 2px 4px #000;
-  transition: background .16s ease, box-shadow .16s ease;
+  min-height: 72px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 8px;
+  border: 2px solid rgba(174,151,117,.72); border-bottom: 0; border-radius: 10px 10px 0 0;
+  color: #e6d4b3; background: linear-gradient(145deg,rgba(34,31,27,.94),rgba(15,14,13,.96));
+  font-size: clamp(.95rem,1.65vw,1.45rem); font-weight: 600; text-shadow: 0 2px 4px #000;
+  transition: background .16s ease,box-shadow .16s ease;
 }
 .nav-item.is-active {
-  color: #fff0c9;
-  border-color: #d6a64d;
-  background: linear-gradient(145deg, rgba(117, 78, 30, .96), rgba(55, 39, 20, .96));
-  box-shadow: inset 0 0 22px rgba(245, 179, 67, .24), 0 0 12px rgba(229, 168, 66, .24);
+  color: #fff0c9; border-color: #d6a64d;
+  background: linear-gradient(145deg,rgba(117,78,30,.96),rgba(55,39,20,.96));
+  box-shadow: inset 0 0 18px rgba(245,179,67,.22),0 0 10px rgba(229,168,66,.2);
 }
-.nav-icon { font-size: clamp(2rem, 4vw, 3.8rem); line-height: 1; }
-
-.section-placeholder {
-  min-height: 180px;
-  margin: 0;
-  padding: 28px;
-  background: rgba(12, 11, 10, .78);
-  border-top: 1px solid rgba(185, 143, 75, .45);
-}
+.nav-icon { font-size: clamp(1.2rem,2vw,1.8rem); line-height: 1; }
+.section-placeholder { min-height: 180px; margin: 0; padding: 24px; background: rgba(12,11,10,.82); border-top: 1px solid rgba(185,143,75,.45); }
 .section-placeholder h2 { margin: 0 0 8px; font-size: 1.2rem; }
-.section-placeholder p { margin: 0; color: #c9bda8; font-family: Arial, sans-serif; }
+.section-placeholder p { margin: 0; color: #c9bda8; font-family: Arial,sans-serif; }
 
-@media (max-width: 760px) {
-  .brand-header { min-height: 76px; gap: 12px; padding: 10px 14px; }
-  .brand-emblem { width: 52px; height: 52px; font-size: 36px; }
-  .brand-copy p { text-align: left; letter-spacing: .08em; }
-  .battle-heading { min-height: 70px; margin: 0 12px; gap: 12px; }
-  .menu-button { width: 52px; height: 48px; border-radius: 10px; }
+@media (max-width:760px) {
+  .brand-header { min-height: 58px; gap: 9px; padding: 6px 12px; }
+  .brand-emblem { width: 42px; height: 42px; font-size: 29px; }
+  .brand-copy h1 { font-size: clamp(.92rem,4vw,1.25rem); letter-spacing: .025em; }
+  .brand-copy p { font-size: .52rem; letter-spacing: .08em; }
+  .battle-heading { min-height: 48px; margin: 0 12px; gap: 10px; }
+  .battle-heading h2 { font-size: clamp(1rem,4.2vw,1.35rem); }
+  .menu-button { width: 40px; height: 38px; border-radius: 8px; gap: 3px; }
+  .menu-button span { width: 5px; height: 5px; }
   .battle-scoreboard {
-    grid-template-columns: minmax(0, 1fr) 66px minmax(0, 1fr);
-    margin: 26px 10px 28px;
-    min-height: 190px;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    margin: 16px 10px 16px; min-height: 142px;
   }
-  .army-banner { min-height: 176px; padding: 12px 10px; gap: 5px; }
-  .army-score { min-width: 0; padding: 5px; font-size: clamp(1.8rem, 7vw, 3rem); }
-  .faction-name { gap: 5px; margin-bottom: 8px; padding-bottom: 6px; font-size: .62rem; }
-  .army-details h3 { font-size: clamp(.78rem, 3.1vw, 1.25rem); overflow-wrap: anywhere; }
-  .round-marker { margin: -20px -12px; }
-  .round-label { font-size: .62rem; padding: 4px 1px; }
-  .round-number { width: 66px; border-width: 4px; font-size: 2.8rem; }
+  .army-banner { min-height: 142px; padding: 10px 8px; gap: 5px; }
+  .army-banner--skaven { padding-right: 12px; }
+  .army-banner--nighthaunt { padding-left: 12px; }
+  .faction-name { gap: 4px; margin-bottom: 6px; padding-bottom: 5px; font-size: clamp(.48rem,2.15vw,.65rem); }
+  .faction-name span { font-size: 1.15em; }
+  .army-details h3 { font-size: clamp(.68rem,3vw,.92rem); line-height: 1.14; }
+  .army-score { min-width: 29px; padding: 4px 3px; font-size: clamp(1.35rem,6vw,2rem); }
+  .round-spear { width: 48px; height: 120%; }
+  .round-medallion { width: 43px; border-width: 3px; }
+  .round-caption { font-size: .36rem; }
+  .round-medallion strong { font-size: 1.55rem; }
   .main-navigation { margin: 0 10px; gap: 5px; }
-  .nav-item { min-height: 78px; flex-direction: column; gap: 4px; padding: 8px 3px; font-size: .78rem; }
-  .nav-icon { font-size: 1.8rem; }
-  .section-placeholder { min-height: 150px; padding: 20px 14px; }
+  .nav-item { min-height: 48px; gap: 6px; padding: 6px 3px; border-radius: 7px 7px 0 0; font-size: clamp(.68rem,3vw,.82rem); }
+  .nav-icon { font-size: 1.05rem; }
+  .section-placeholder { min-height: 150px; padding: 18px 14px; }
 }
-
-@media (max-width: 380px) {
-  .army-banner { padding: 8px 6px; }
-  .army-score { font-size: 1.65rem; }
-  .faction-name { font-size: .52rem; }
-  .army-details h3 { font-size: .72rem; }
-  .round-number { width: 58px; font-size: 2.4rem; }
-  .battle-scoreboard { grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr); }
+@media (max-width:360px) {
+  .brand-copy h1 { font-size: .84rem; }
+  .brand-copy p { font-size: .46rem; }
+  .battle-scoreboard { margin-left: 7px; margin-right: 7px; }
+  .army-banner { padding-left: 5px; padding-right: 5px; }
+  .army-details h3 { font-size: .64rem; }
+  .faction-name { font-size: .45rem; }
+  .army-score { min-width: 25px; font-size: 1.25rem; }
+  .round-spear { width: 42px; }
+  .round-medallion { width: 38px; }
+  .nav-item { font-size: .65rem; }
+}
+@media (min-width:761px) {
+  .battle-scoreboard { min-height: 205px; margin-top: 24px; margin-bottom: 22px; }
+  .army-banner { min-height: 205px; }
 }
