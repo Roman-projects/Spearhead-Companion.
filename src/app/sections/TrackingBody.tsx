@@ -1,4 +1,4 @@
-import type { BattleState, PhaseId, TurnSide } from "../battleState";
+import type { BattleState, TurnSide } from "../battleState";
 import { PHASES } from "../battleState";
 
 interface TrackingBodyProps {
