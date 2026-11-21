@@ -1,4 +1,5 @@
 import { MAIN_SECTIONS, type MainSection } from "./navigation";
+import { BattleBody } from "./sections/BattleBody";
 
 interface AppShellProps {
   activeSection: MainSection;
@@ -87,10 +88,12 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
           </button>)}
         </nav>
 
-        <section className="section-placeholder" aria-live="polite">
-          <h2>{MAIN_SECTIONS.find((section) => section.id === activeSection)?.label}</h2>
-          <p>Section content will be built here.</p>
-        </section>
+        {activeSection === "battle" ? <BattleBody /> : (
+          <section className="section-placeholder" aria-live="polite">
+            <h2>{MAIN_SECTIONS.find((section) => section.id === activeSection)?.label}</h2>
+            <p>Section content will be built here.</p>
+          </section>
+        )}
       </div>
     </main>
   );
