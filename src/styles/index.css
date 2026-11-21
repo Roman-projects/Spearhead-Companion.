@@ -256,3 +256,49 @@ body { overscroll-behavior:none; }
   .tracking-counter-row { min-height:57px; padding:7px 8px; }
   .tracking-counter-actions button { width:36px; height:36px; }
 }
+
+
+/* Battle collapsible information, usage controls and end-of-turn flow */
+.battle-block-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 2px 8px; border:0; color:#d7b36e; background:transparent; text-align:left; }
+.battle-block-toggle h3 { margin:0; font-size:.88rem; letter-spacing:.055em; text-transform:uppercase; }
+.battle-block-toggle > span { color:#e8c477; font:700 1.1rem Arial,sans-serif; }
+.battle-action-card.is-used { opacity:.62; border-color:rgba(120,155,105,.55); }
+.battle-action-name { flex:1 1 auto; min-width:0; }
+.battle-use-button { flex:0 0 auto; padding:6px 10px; border:1px solid rgba(194,151,79,.65); border-radius:5px; color:#f1d49a; background:rgba(35,28,19,.95); font:700 .68rem Arial,sans-serif; text-transform:uppercase; }
+.battle-use-button[aria-pressed="true"] { color:#d6e4c8; border-color:#829b70; background:rgba(45,62,38,.75); }
+.battle-scoring { margin-top:18px; padding:15px; border:1px solid rgba(198,151,74,.62); border-radius:7px; background:linear-gradient(145deg,rgba(48,36,25,.88),rgba(20,19,17,.96)); }
+.battle-scoring h3 { margin:0 0 12px; color:#f0dfbd; font-size:1.1rem; }
+.battle-score-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-top:1px solid rgba(185,143,75,.25); }
+.battle-score-row > div:first-child { display:flex; flex-direction:column; gap:3px; font-family:Arial,sans-serif; }
+.battle-score-row strong { color:#e9dcc3; font-size:.8rem; }
+.battle-score-row span { color:#a99d88; font-size:.67rem; }
+.battle-score-controls { display:flex; align-items:center; gap:10px; }
+.battle-score-controls button { width:34px; height:34px; border:1px solid rgba(194,151,79,.7); border-radius:5px; color:#f1d49a; background:rgba(75,53,27,.8); font-size:1.1rem; }
+.battle-score-controls button:disabled { opacity:.3; }
+.battle-score-controls output { min-width:18px; color:#ffe7b4; font:700 1.1rem Georgia,serif; text-align:center; }
+.battle-score-total { display:flex; justify-content:space-between; padding:12px 0 4px; color:#c9bda8; font: .78rem Arial,sans-serif; }
+.battle-score-total strong { color:#ffe7b4; font:700 1.25rem Georgia,serif; }
+.battle-scoring-actions,.battle-transition-actions { display:flex; gap:8px; margin-top:13px; }
+.battle-primary-button,.battle-secondary-button { flex:1 1 0; min-height:43px; padding:9px 12px; border:1px solid #c89b50; border-radius:5px; color:#fff0c9; background:linear-gradient(145deg,#795326,#382717); font:700 .78rem Arial,sans-serif; }
+.battle-primary-button:disabled,.battle-secondary-button:disabled { opacity:.35; cursor:default; }
+.battle-secondary-button { color:#c9bda8; border-color:rgba(161,130,83,.48); background:rgba(27,25,22,.92); }
+.battle-scoring-note { margin:10px 0 0; color:#a99d88; font: .68rem/1.4 Arial,sans-serif; }
+.battle-round-transition { margin-top:16px; padding:18px; border:1px solid rgba(198,151,74,.62); border-radius:7px; background:linear-gradient(145deg,rgba(48,36,25,.92),rgba(20,19,17,.98)); }
+.battle-round-transition h2 { margin:0 0 9px; color:#f0dfbd; font-size:1.2rem; }
+.battle-round-transition > p:not(.battle-eyebrow) { color:#d0c2a8; font: .84rem/1.5 Arial,sans-serif; }
+.battle-transition-progress { display:flex; gap:6px; margin:16px 0; }
+.battle-transition-progress span { flex:1; height:4px; border-radius:4px; background:#514638; }
+.battle-transition-progress span.is-complete { background:#d6a64d; }
+.battle-choice-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+.battle-choice-row button { min-height:40px; border:1px solid rgba(161,130,83,.55); border-radius:5px; color:#c9bda8; background:rgba(27,25,22,.92); font:700 .72rem Arial,sans-serif; }
+.battle-choice-row button.is-selected { color:#ffe7b4; border-color:#d6a64d; background:rgba(107,72,29,.75); }
+.battle-confirm-check { display:flex; align-items:flex-start; gap:9px; margin:14px 0; color:#e0d2b9; font: .78rem/1.4 Arial,sans-serif; }
+.battle-confirm-check input { accent-color:#c99b53; width:17px; height:17px; }
+@media(max-width:760px) {
+ .battle-block-toggle h3 { font-size:.78rem; }
+ .battle-scoring { padding:12px; }
+ .battle-score-row strong { font-size:.73rem; }
+ .battle-score-controls { gap:7px; }
+ .battle-score-controls button { width:32px; height:32px; }
+ .battle-round-transition { padding:14px; }
+}
