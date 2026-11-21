@@ -6,9 +6,11 @@ import type { BattleState } from "./battleState";
 export default function App() {
   const [activeSection, setActiveSection] = useState<MainSection>("battle");
   const [battleState, setBattleState] = useState<BattleState>({
-    round: 2,
-    leftScore: 8,
-    rightScore: 6,
+    round: 1,
+    turnNumber: 1,
+    leftScore: 0,
+    rightScore: 0,
+    underdog: "own",
     turn: "own",
     phase: "hero",
   });
