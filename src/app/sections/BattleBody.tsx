@@ -150,7 +150,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
             <h3>{block.heading}</h3><span>{isCollapsed ? "+" : "−"}</span>
           </button>
           {!isCollapsed && <div className="battle-action-list">
-            {block.items.map((item, index) => {
+            {block.items.map((item) => {
               const unavailable = item.includes("(unavailable)") || phase !== currentPhase;
               const cleanItem = item.replace(" (unavailable)", "");
               const itemKey = `${phase}-${cleanItem}`;
