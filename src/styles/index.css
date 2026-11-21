@@ -139,3 +139,39 @@ button { font:inherit; cursor:pointer; }
  .battle-action-list { grid-template-columns:1fr; gap:6px; padding-top:9px; }
  .battle-action-card { min-height:46px; padding:8px 10px; font-size:.76rem; }
 }
+
+
+/* Battle interaction refinements */
+.battle-controls { justify-content:flex-start; align-items:center; }
+.battle-turn-picker { position:relative; min-width:0; }
+.battle-turn-list-button { min-width:180px; min-height:43px; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:8px 14px; border:1px solid rgba(194,151,79,.72); border-radius:7px; color:#f1dfbd; background:linear-gradient(145deg,rgba(61,45,27,.96),rgba(25,23,20,.98)); font-family:Arial,sans-serif; font-size:.84rem; font-weight:700; box-shadow:inset 0 0 12px rgba(0,0,0,.28); }
+.battle-chevron { color:#d6a64d; font-size:1.1rem; }
+.battle-turn-menu { position:absolute; z-index:20; top:calc(100% + 5px); left:0; min-width:100%; padding:4px; border:1px solid rgba(194,151,79,.75); border-radius:7px; background:#211c16; box-shadow:0 8px 20px #000b; }
+.battle-turn-menu button { width:100%; display:block; padding:10px 12px; border:0; border-radius:4px; color:#e9dcc3; background:transparent; text-align:left; font-family:Arial,sans-serif; font-size:.82rem; }
+.battle-turn-menu button[aria-selected="true"], .battle-turn-menu button:hover { color:#ffe7b4; background:rgba(117,78,30,.7); }
+.battle-view-toggle { width:43px; height:43px; display:grid; place-items:center; border:1px solid rgba(194,151,79,.72); border-radius:7px; color:#e7c985; background:linear-gradient(145deg,rgba(61,45,27,.96),rgba(25,23,20,.98)); }
+.battle-view-toggle svg { width:22px; height:22px; }
+.battle-phase-nav button { position:relative; flex-direction:row; gap:0; min-height:48px; padding:6px 3px; font-size:clamp(.58rem,.85vw,.78rem); }
+.battle-phase-nav button.is-selected { color:#ffe7b4; border-color:rgba(123,108,87,.65); background:linear-gradient(145deg,rgba(37,33,28,.92),rgba(19,18,16,.96)); box-shadow:none; }
+.battle-phase-nav button.is-current { border-color:#d6a64d; box-shadow:inset 0 0 12px rgba(245,179,67,.12); }
+.battle-phase-nav button.is-current.is-viewed { color:#ffe7b4; background:linear-gradient(145deg,rgba(107,72,29,.88),rgba(48,34,19,.96)); box-shadow:inset 0 0 12px rgba(245,179,67,.15),0 0 8px rgba(229,168,66,.14); }
+.battle-current-indicator { position:absolute; top:5px; right:6px; width:6px; height:6px; border-radius:50%; background:#efbd61; box-shadow:0 0 7px #e8a83e; }
+.battle-phase-pager span { color:#c6a66c; font-family:'Cinzel',Georgia,serif; font-size:.78rem; }
+.battle-phase-content { margin-top:10px; }
+.battle-content-title { margin:0 0 13px; color:#f0dfbd; font-size:1.35rem; font-weight:600; }
+.battle-content-block { padding:0 0 14px; margin:0 0 13px; border-bottom:1px solid rgba(198,151,74,.58); }
+.battle-content-block:last-child { border-bottom:0; }
+.battle-content-block h3 { margin:0 0 9px; color:#d7b36e; font-size:.88rem; font-weight:700; letter-spacing:.055em; text-transform:uppercase; }
+.battle-content-block .battle-action-list { padding-top:0; }
+@media (max-width:760px) {
+ .battle-controls { flex-direction:row; align-items:center; gap:8px; margin-bottom:10px; }
+ .battle-turn-picker { flex:1 1 auto; }
+ .battle-turn-list-button { width:100%; min-width:0; min-height:42px; padding:7px 11px; font-size:.78rem; }
+ .battle-turn-menu { min-width:100%; }
+ .battle-view-toggle { flex:0 0 42px; width:42px; height:42px; }
+ .battle-phase-nav button { min-height:46px; padding:6px 2px; font-size:clamp(.52rem,2.25vw,.68rem); line-height:1.1; }
+ .battle-current-indicator { top:4px; right:4px; width:5px; height:5px; }
+ .battle-phase-pager span { font-size:.68rem; }
+ .battle-content-title { font-size:1.15rem; }
+ .battle-content-block h3 { font-size:.78rem; }
+}
