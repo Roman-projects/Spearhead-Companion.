@@ -76,8 +76,8 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
         <section className="battle-heading" aria-label="Current battle"><h2>{battle.name}</h2></section>
 
         <section className="battle-scoreboard" aria-label="Battle scoreboard">
-          <ArmyPanel side="left" {...battle.left} score={battleState.leftScore} isActive={battleState.turn === "own"} />
-          <ArmyPanel side="right" {...battle.right} score={battleState.rightScore} isActive={battleState.turn === "opponent"} />
+          <ArmyPanel side="left" {...battle.left} temporaryTags={battleState.underdog === "own" ? [{ id: "underdog", label: "Underdog" }] : []} score={battleState.leftScore} isActive={battleState.turn === "own"} />
+          <ArmyPanel side="right" {...battle.right} temporaryTags={battleState.underdog === "opponent" ? [{ id: "underdog", label: "Underdog" }] : []} score={battleState.rightScore} isActive={battleState.turn === "opponent"} />
           <RoundSpear round={battleState.round} />
         </section>
 
