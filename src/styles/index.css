@@ -315,3 +315,11 @@ body { overscroll-behavior:none; }
  .battle-action-main { min-height:46px; padding:8px 10px; gap:8px; }
  .battle-item-details { padding:10px 12px 12px 26px; }
 }
+
+/* Unit action choices and compact score disclosure */
+.battle-option-list { display:flex; flex-direction:column; gap:8px; }
+.battle-option-row { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:36px; color:#d8cbb4; }
+.battle-option-row + .battle-option-row { padding-top:7px; border-top:1px solid rgba(185,143,75,.2); }
+.battle-score-toggle { width:100%; min-height:44px; display:flex; align-items:center; justify-content:space-between; padding:8px 11px; border:1px solid rgba(194,151,79,.7); border-radius:5px; color:#ffe7b4; background:linear-gradient(145deg,rgba(75,53,27,.85),rgba(31,25,18,.95)); font:700 .82rem Arial,sans-serif; text-align:left; }
+.battle-score-toggle span { color:#e8c477; font-size:1.1rem; }
+.battle-scoring > .battle-eyebrow { margin-top:14px; }
