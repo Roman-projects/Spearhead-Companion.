@@ -99,10 +99,25 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
             underdog={battleState.underdog}
             turn={battleState.turn}
             phase={battleState.phase}
+            roundStarter={battleState.roundStarter}
+            leftScore={battleState.leftScore}
+            rightScore={battleState.rightScore}
             onTurnChange={(turn) => onBattleStateChange({ ...battleState, turn })}
             onPhaseChange={(phase) => onBattleStateChange({ ...battleState, phase })}
-            onRoundChange={(round) => onBattleStateChange({ ...battleState, round })}
-            onTurnNumberChange={(turnNumber) => onBattleStateChange({ ...battleState, turnNumber })}
+            onTurnEnd={(turnNumber, turn, phase) => onBattleStateChange({ ...battleState, turnNumber, turn, phase })}
+            onCompleteRound={(nextStarter, result) => onBattleStateChange({
+              ...battleState,
+              round: battleState.round + 1,
+              turn: nextStarter,
+              roundStarter: nextStarter,
+              underdog: result.underdog,
+              priorityWinner: result.priorityWinner,
+              seizedInitiative: result.seizedInitiative,
+              doubleTurn: result.doubleTurn,
+              tacticsDrawBlocked: result.tacticsDrawBlocked,
+              tacticsCardsRecovered: result.tacticsCardsRecovered,
+              phase: "hero",
+            })}
             onScoreChange={(side, score) => onBattleStateChange({ ...battleState, [side === "own" ? "leftScore" : "rightScore"]: battleState[side === "own" ? "leftScore" : "rightScore"] + score })}
           />
         ) : activeSection === "tracking" ? (
