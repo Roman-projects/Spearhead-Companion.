@@ -80,8 +80,8 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, turn, mode, battleRound, onScore }: {
-  phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number; onScore: (total: number) => void;
+function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }: {
+  phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number; onScore: (total: number) => void; onFinishTurn: () => void;
 }) {
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
@@ -133,7 +133,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore }: {
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
         {transitionStep < 3 ? <button type="button" className="battle-primary-button" disabled={transitionStep === 2 && !underdogChecked} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
-          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onScore(0); setTransitionStep(null); }}>Complete round setup</button>}
+          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onFinishTurn(); }}>Complete round setup</button>}
       </div>
     </section>;
   }
@@ -180,7 +180,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore }: {
         <div className="battle-score-total">Total this turn <strong>{draft.objectives + draft.tactics + draft.twist}</strong></div>
         <div className="battle-scoring-actions">
           <button type="button" className="battle-primary-button" disabled={scored} onClick={() => { onScore(draft.objectives + draft.tactics + draft.twist); setScored(true); }}>{scored ? "Scoring confirmed" : "Puntuar"}</button>
-          {scored && <button type="button" className="battle-primary-button" onClick={() => setTransitionStep(0)}>Terminar turno</button>}
+          {scored && <button type="button" className="battle-primary-button" onClick={() => turn === "own" ? onFinishTurn() : setTransitionStep(0)}>Terminar turno</button>}
         </div>
         <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
       </section>}
@@ -249,8 +249,8 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
         {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
-      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={(score) => onScoreChange(turn, score)} /> :
-        <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={() => {}} />}
+      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} /> :
+        <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={() => {}} onFinishTurn={finishTurn} />}
       {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
   );
