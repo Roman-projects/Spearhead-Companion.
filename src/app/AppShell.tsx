@@ -1,5 +1,7 @@
 import { MAIN_SECTIONS, type MainSection } from "./navigation";
 import { BattleBody } from "./sections/BattleBody";
+import { TrackingBody } from "./sections/TrackingBody";
+import type { BattleState } from "./battleState";
 
 interface AppShellProps {
   activeSection: MainSection;
@@ -56,7 +58,7 @@ function ArmyPanel({ side, faction, army, score, isActive, temporaryTags }: {
   );
 }
 
-export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
+export function AppShell({ activeSection, onSectionChange, battleState, onBattleStateChange }: AppShellProps) {
   return (
     <main className="app-root">
       <div className="app-backdrop" aria-hidden="true" />
