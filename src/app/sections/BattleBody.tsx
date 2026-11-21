@@ -130,7 +130,6 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
   };
 
   if (phase === "end" && transitionStep !== null) {
-    const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
     const doubleTurn = nextStarter === previousSecond;
     const scoreUnderdog: TurnSide | null = leftScore === rightScore ? null : leftScore < rightScore ? "own" : "opponent";
     const resolvedUnderdog = scoreUnderdog ?? underdogChoice;
@@ -153,7 +152,6 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
         <button type="button" className={nextStarter === "own" ? "is-selected" : ""} onClick={() => setNextStarter("own")}><span className="battle-side-label">LEFT · Crixxit</span></button>
         <button type="button" className={nextStarter === "opponent" ? "is-selected" : ""} onClick={() => setNextStarter("opponent")}><span className="battle-side-label">RIGHT · Cursed Shacklehorde</span></button>
       </div>}
-      {/* Initiative and active army will be inserted before tactics recovery when automation is enabled. */}
       {transitionStep === 2 && <>
         {!scoreUnderdog && <div className="battle-choice-row">
               <button type="button" className={underdogChoice === "own" ? "is-selected" : ""} onClick={() => { setUnderdogChoice("own"); setUnderdogChecked(false); }}>Crixxit wins roll-off</button>
@@ -162,6 +160,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
         <label className="battle-confirm-check"><input type="checkbox" checked={underdogChecked} disabled={!scoreUnderdog && !underdogChoice} onChange={(event) => setUnderdogChecked(event.target.checked)} /> Confirm Underdog: {scoreUnderdog ? underdogName : underdogChoice ? (underdogChoice === "own" ? "Crixxit" : "Cursed Shacklehorde") : "Select roll-off winner"}</label>
       </>}
       {transitionStep === 3 && <label className="battle-confirm-check"><input type="checkbox" checked={twistDrawn} onChange={(event) => setTwistDrawn(event.target.checked)} /> Twist card drawn and registered</label>}
+      {/* Initiative and active army will be inserted here, before tactics recovery, when automation is enabled. */}
       {transitionStep === 4 && <label className="battle-confirm-check"><input type="checkbox" checked={tacticsRecoveryConfirmed} onChange={(event) => setTacticsRecoveryConfirmed(event.target.checked)} /> Battle Tactics cards recovered</label>}
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
