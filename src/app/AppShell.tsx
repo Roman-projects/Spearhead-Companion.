@@ -118,7 +118,6 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
             roundStarter={battleState.roundStarter}
             leftScore={battleState.leftScore}
             rightScore={battleState.rightScore}
-            onTurnChange={(turn) => onBattleStateChange({ ...battleState, turn })}
             onPhaseChange={(phase) => onBattleStateChange({ ...battleState, phase })}
             onTurnEnd={(turnNumber, turn, phase) => onBattleStateChange({ ...battleState, turnNumber, turn, phase, ...(phase === "end" && battleState.leftScore !== battleState.rightScore ? { underdog: battleState.leftScore < battleState.rightScore ? "own" : "opponent" } : {}) })}
             onCompleteRound={(nextStarter, result) => onBattleStateChange({
