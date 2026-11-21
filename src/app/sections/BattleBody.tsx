@@ -6,12 +6,9 @@ type ViewMode = "reduced" | "complete";
 type ContentBlock = { heading: string; items: string[] };
 
 const phases: { id: PhaseId; label: string }[] = [
-  { id: "hero", label: "Hero" },
-  { id: "movement", label: "Movement" },
-  { id: "shooting", label: "Shooting" },
-  { id: "charge", label: "Charge" },
-  { id: "combat", label: "Combat" },
-  { id: "end", label: "End of Turn" },
+  { id: "hero", label: "Hero" }, { id: "movement", label: "Movement" },
+  { id: "shooting", label: "Shooting" }, { id: "charge", label: "Charge" },
+  { id: "combat", label: "Combat" }, { id: "end", label: "End of Turn" },
 ];
 
 const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBlock[]; fullOwn: ContentBlock[]; fullOpponent: ContentBlock[] }> = {
@@ -23,58 +20,54 @@ const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBloc
   },
   movement: {
     own: [
+      { heading: "Abilities", items: [] },
       { heading: "Movement", items: ["Deathmaster Crixxit · Move 7”", "Deathmaster · Move 7”", "Gutter Runners 1 · Move 7”", "Gutter Runners 2 · Move 7”", "Night Runners · Move 7”"] },
       { heading: "Reinforcement", items: ["Gutter Runners 1", "Gutter Runners 2", "Night Runners"] },
     ],
     opponent: [],
     fullOwn: [
+      { heading: "Abilities", items: [] },
       { heading: "Movement", items: ["Deathmaster Crixxit · Move 7”", "Deathmaster · Move 7”", "Gutter Runners 1 · Move 7”", "Gutter Runners 2 · Move 7”", "Night Runners · Move 7”"] },
       { heading: "Reinforcement", items: ["Gutter Runners 1", "Gutter Runners 2", "Night Runners"] },
       { heading: "Rules", items: ["Normal Move", "Run", "Retreat", "Call for Reinforcements"] },
     ],
-    fullOpponent: [
-      { heading: "Movement", items: ["Deathmaster Crixxit · Move 7” (unavailable)", "Deathmaster · Move 7” (unavailable)", "Gutter Runners 1 · Move 7” (unavailable)", "Gutter Runners 2 · Move 7” (unavailable)", "Night Runners · Move 7” (unavailable)"] },
-    ],
+    fullOpponent: [{ heading: "Movement", items: ["Deathmaster Crixxit · Move 7” (unavailable)", "Deathmaster · Move 7” (unavailable)", "Gutter Runners 1 · Move 7” (unavailable)", "Gutter Runners 2 · Move 7” (unavailable)", "Night Runners · Move 7” (unavailable)"] }],
   },
   shooting: {
-    own: [{ heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }],
+    own: [{ heading: "Abilities", items: [] }, { heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }],
     opponent: [],
-    fullOwn: [{ heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }, { heading: "Rules", items: ["Shoot", "Shoot in Combat"] }],
+    fullOwn: [{ heading: "Abilities", items: [] }, { heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }, { heading: "Rules", items: ["Shoot", "Shoot in Combat"] }],
     fullOpponent: [{ heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars (unavailable)"] }],
   },
   charge: {
-    own: [{ heading: "Abilities", items: ["Gutter Runners 1 · Bomb Rats", "Gutter Runners 2 · Bomb Rats"] }],
+    own: [{ heading: "Abilities", items: ["Gutter Runners 1 · Bomb Rats", "Gutter Runners 2 · Bomb Rats"] }, { heading: "Charge", items: ["Deathmaster Crixxit · 2D6", "Deathmaster · 2D6", "Gutter Runners 1 · 2D6", "Gutter Runners 2 · 2D6", "Night Runners · 2D6"] }],
     opponent: [],
-    fullOwn: [
-      { heading: "Charge", items: ["Deathmaster Crixxit · 2D6", "Deathmaster · 2D6", "Gutter Runners 1 · 2D6", "Gutter Runners 2 · 2D6", "Night Runners · 2D6"] },
-      { heading: "Abilities", items: ["Bomb Rats · Gutter Runners 1 and 2 when token is present"] },
-      { heading: "Rules", items: ["Charge"] },
-    ],
+    fullOwn: [{ heading: "Abilities", items: ["Gutter Runners 1 · Bomb Rats", "Gutter Runners 2 · Bomb Rats"] }, { heading: "Charge", items: ["Deathmaster Crixxit · 2D6", "Deathmaster · 2D6", "Gutter Runners 1 · 2D6", "Gutter Runners 2 · 2D6", "Night Runners · 2D6"] }, { heading: "Rules", items: ["Charge"] }],
     fullOpponent: [{ heading: "Charge", items: ["All units · Charge actions unavailable"] }],
   },
   combat: {
     own: [
-      { heading: "Weapons", items: ["Deathmaster Crixxit · Blades of Thirteen Cuts", "Deathmaster · Weeping Blade", "Gutter Runners 1 and 2 · Eshin Specialist Blades", "Night Runners · Poisoned Blades"] },
       { heading: "Abilities", items: ["Cloaked in Shadow", "Way of the Fiendish Claw", "Smoke Bombs"] },
       { heading: "Passive abilities", items: ["Shadowy Killers", "Master of Shadows · modifies Cloaked in Shadow"] },
+      { heading: "Weapons", items: ["Deathmaster Crixxit · Blades of Thirteen Cuts", "Deathmaster · Weeping Blade", "Gutter Runners 1 and 2 · Eshin Specialist Blades", "Night Runners · Poisoned Blades"] },
       { heading: "Rules", items: ["Fight", "Pile-in"] },
     ],
     opponent: [
-      { heading: "Weapons", items: ["All melee profiles"] },
       { heading: "Abilities", items: ["Cloaked in Shadow", "Way of the Fiendish Claw", "Smoke Bombs"] },
       { heading: "Passive abilities", items: ["Shadowy Killers", "Master of Shadows · modifies Cloaked in Shadow"] },
+      { heading: "Weapons", items: ["All melee profiles"] },
       { heading: "Rules", items: ["Fight", "Pile-in"] },
     ],
     fullOwn: [
-      { heading: "Weapons", items: ["All units and melee weapon profiles"] },
       { heading: "Abilities", items: ["Cloaked in Shadow", "Way of the Fiendish Claw", "Smoke Bombs"] },
       { heading: "Passive abilities", items: ["Shadowy Killers", "Master of Shadows · modifies Cloaked in Shadow"] },
+      { heading: "Weapons", items: ["All units and melee weapon profiles"] },
       { heading: "Rules", items: ["Fight", "Pile-in"] },
     ],
     fullOpponent: [
-      { heading: "Weapons", items: ["All units and melee weapon profiles"] },
       { heading: "Abilities", items: ["Cloaked in Shadow", "Way of the Fiendish Claw", "Smoke Bombs"] },
       { heading: "Passive abilities", items: ["Shadowy Killers", "Master of Shadows · modifies Cloaked in Shadow"] },
+      { heading: "Weapons", items: ["All units and melee weapon profiles"] },
       { heading: "Rules", items: ["Fight", "Pile-in"] },
     ],
   },
@@ -96,14 +89,11 @@ function EyeIcon({ open }: { open: boolean }) {
 
 function PhaseContent({ phase, turn, mode }: { phase: PhaseId; turn: TurnSide; mode: ViewMode }) {
   const data = phaseContent[phase];
-  const blocks = mode === "complete"
-    ? (turn === "own" ? data.fullOwn : data.fullOpponent)
-    : (turn === "own" ? data.own : data.opponent);
-
+  const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
+  const visibleBlocks = blocks.filter((block) => block.items.length > 0);
   return (
     <section className="battle-phase-content" aria-live="polite">
-      <h2 className="battle-content-title">{phases.find((item) => item.id === phase)?.label}</h2>
-      {blocks.length > 0 ? blocks.map((block, blockIndex) => (
+      {visibleBlocks.length ? visibleBlocks.map((block, blockIndex) => (
         <section className="battle-content-block" key={`${phase}-${block.heading}-${blockIndex}`}>
           <h3>{block.heading}</h3>
           <div className="battle-action-list">
@@ -117,27 +107,43 @@ function PhaseContent({ phase, turn, mode }: { phase: PhaseId; turn: TurnSide; m
             })}
           </div>
         </section>
-      )) : (
-        <div className="battle-empty-state"><span className="battle-empty-ornament" aria-hidden="true">✧</span><p>No unit-specific actions to show in this phase.</p></div>
-      )}
+      )) : <div className="battle-empty-state"><span className="battle-empty-ornament" aria-hidden="true">✧</span><p>No unit-specific actions to show in this phase.</p></div>}
     </section>
   );
 }
 
 export function BattleBody() {
+  const [currentPhase, setCurrentPhase] = useState<PhaseId>("hero");
   const [viewedPhase, setViewedPhase] = useState<PhaseId>("hero");
-  const [currentPhase] = useState<PhaseId>("hero");
   const [turn, setTurn] = useState<TurnSide>("own");
   const [mode, setMode] = useState<ViewMode>("reduced");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
+  const currentIndex = phases.findIndex((item) => item.id === currentPhase);
   const viewedIndex = phases.findIndex((item) => item.id === viewedPhase);
+  const isViewingCurrent = currentPhase === viewedPhase;
+
+  const stepPhase = (direction: -1 | 1) => {
+    const nextIndex = currentIndex + direction;
+    if (nextIndex >= 0 && nextIndex < phases.length) {
+      const nextPhase = phases[nextIndex].id;
+      setCurrentPhase(nextPhase);
+      setViewedPhase(nextPhase);
+    } else if (direction === 1 && currentPhase === "end") {
+      setTurn((value) => value === "own" ? "opponent" : "own");
+      setCurrentPhase("hero");
+      setViewedPhase("hero");
+    } else if (direction === -1 && currentPhase === "hero") {
+      setTurn((value) => value === "own" ? "opponent" : "own");
+      setCurrentPhase("end");
+      setViewedPhase("end");
+    }
+  };
 
   return (
     <div className="battle-body">
       <div className="battle-controls">
         <div className="battle-turn-picker">
-          <button type="button" className="battle-turn-list-button" aria-expanded={turnMenuOpen}
-            aria-haspopup="listbox" onClick={() => setTurnMenuOpen((open) => !open)}>
+          <button type="button" className="battle-turn-list-button" aria-expanded={turnMenuOpen} aria-haspopup="listbox" onClick={() => setTurnMenuOpen((open) => !open)}>
             <span>{turn === "own" ? "Your turn" : "Opponent’s turn"}</span><span className="battle-chevron" aria-hidden="true">⌄</span>
           </button>
           {turnMenuOpen && <div className="battle-turn-menu" role="listbox" aria-label="Select turn">
@@ -145,18 +151,16 @@ export function BattleBody() {
             <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { setTurn("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
           </div>}
         </div>
-        <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"}
-          aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}>
+        <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}>
           <EyeIcon open={mode === "complete"} />
         </button>
       </div>
 
       <nav className="battle-phase-nav" aria-label="Battle phases">
         {phases.map((item) => (
-          <button key={item.id} type="button"
-            className={`${viewedPhase === item.id ? "is-viewed" : ""} ${currentPhase === item.id ? "is-current" : ""}`}
+          <button key={item.id} type="button" className={`${currentPhase === item.id ? "is-current" : ""} ${viewedPhase === item.id ? "is-viewed" : ""}`}
             aria-current={currentPhase === item.id ? "step" : undefined}
-            aria-label={`${item.label}${currentPhase === item.id ? ", current phase" : ""}`}
+            aria-label={`${item.label}${currentPhase === item.id ? ", current phase" : ""}${viewedPhase === item.id ? ", viewing" : ""}`}
             onClick={() => setViewedPhase(item.id)}>
             <span>{item.label}</span>
             {currentPhase === item.id && <span className="battle-current-indicator" title="Current phase" />}
@@ -164,10 +168,16 @@ export function BattleBody() {
         ))}
       </nav>
 
-      <div className="battle-phase-pager">
-        <button type="button" disabled={viewedIndex === 0} onClick={() => setViewedPhase(phases[viewedIndex - 1].id)}>‹ Previous</button>
-        <span>{phases[viewedIndex].label}</span>
-        <button type="button" disabled={viewedIndex === phases.length - 1} onClick={() => setViewedPhase(phases[viewedIndex + 1].id)}>Next ›</button>
+      <div className={`battle-phase-pager ${isViewingCurrent ? "" : "is-inspecting"}`}>
+        {isViewingCurrent ? <>
+          <button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button>
+          <span aria-hidden="true" />
+          <button type="button" onClick={() => stepPhase(1)}>Next ›</button>
+        </> : <>
+          <span aria-hidden="true" />
+          <button type="button" className="battle-back-current" onClick={() => setViewedPhase(currentPhase)}>Back to actual phase</button>
+          <span aria-hidden="true" />
+        </>}
       </div>
 
       <PhaseContent phase={viewedPhase} turn={turn} mode={mode} />
