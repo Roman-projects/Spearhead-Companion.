@@ -186,3 +186,28 @@ button { font:inherit; cursor:pointer; }
 .battle-phase-pager .battle-back-current { margin:0 auto; padding:7px 16px; border:1px solid rgba(214,166,77,.7); border-radius:6px; color:#f1d49a; background:linear-gradient(145deg,rgba(75,53,27,.85),rgba(31,25,18,.95)); font-weight:700; }
 .battle-phase-pager > span:empty { display:block; flex:1; }
 .battle-content-block:first-child { margin-top:0; }
+
+
+/* Fixed global shell with an independently scrolling section viewport */
+html, body, #root { height:100%; min-height:0; overflow:hidden; }
+body { overscroll-behavior:none; }
+.app-root { width:100%; height:100vh; height:100dvh; min-height:0; overflow:hidden; }
+.app-content { display:flex; flex-direction:column; width:100%; height:100vh; height:100dvh; min-height:0; overflow:hidden; }
+.brand-header,
+.battle-heading,
+.battle-scoreboard,
+.main-navigation { flex:0 0 auto; }
+.battle-body,
+.section-placeholder { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:rgba(190,145,70,.62) rgba(18,16,14,.55); }
+.battle-body { padding-bottom:calc(32px + env(safe-area-inset-bottom, 0px)); }
+.section-placeholder { padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)); }
+.battle-body::-webkit-scrollbar,
+.section-placeholder::-webkit-scrollbar { width:6px; }
+.battle-body::-webkit-scrollbar-track,
+.section-placeholder::-webkit-scrollbar-track { background:rgba(18,16,14,.55); }
+.battle-body::-webkit-scrollbar-thumb,
+.section-placeholder::-webkit-scrollbar-thumb { border-radius:8px; background:rgba(190,145,70,.62); }
+
+@media (max-width:760px) {
+ .battle-body { padding-bottom:calc(26px + env(safe-area-inset-bottom, 0px)); }
+}
