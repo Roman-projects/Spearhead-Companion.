@@ -159,8 +159,9 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
               const isWeapon = block.heading === "Weapons" && (phase === "shooting" || phase === "combat");
               const actionLabel = block.heading === "Charge" || block.heading === "Abilities" ? (block.heading === "Charge" ? "Charge" : "Use") : null;
               const movementOptions = ["Normal Move", "Run · Move + 1D6", "Retreat · 1D3 mortal damage"];
-              const weaponOptions = phase === "shooting" ? ["Slings", "Poisoned Stars"] : ["Melee weapon profile"];
-              const unitName = isMovement ? cleanItem.split(" · ")[0] : cleanItem;
+              const weaponLabel = cleanItem.split(" · ")[1] || cleanItem;
+              const weaponOptions = phase === "shooting" ? weaponLabel.split(" and ") : [weaponLabel];
+              const unitName = (isMovement || isWeapon) ? cleanItem.split(" · ")[0] : cleanItem;
               const groupUsed = movementOptions.some((option) => usedActions[`${itemKey}-${option}`]);
               const canUse = !!actionLabel && !unavailable;
               return <article className={`battle-action-card battle-action-card-expandable ${unavailable ? "is-unavailable" : ""} ${usedActions[itemKey] || groupUsed ? "is-used" : ""}`} key={itemKey}>
