@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 
-type PhaseId = "hero" | "movement" | "shooting" | "charge" | "combat" | "end";
-type TurnSide = "own" | "opponent";
 type ViewMode = "reduced" | "complete";
 type ContentBlock = { heading: string; items: string[] };
 
-const phases: { id: PhaseId; label: string }[] = [
-  { id: "hero", label: "Hero" }, { id: "movement", label: "Movement" },
-  { id: "shooting", label: "Shooting" }, { id: "charge", label: "Charge" },
-  { id: "combat", label: "Combat" }, { id: "end", label: "End of Turn" },
-];
+const phases = PHASES;
 
 const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBlock[]; fullOwn: ContentBlock[]; fullOpponent: ContentBlock[] }> = {
   hero: {
