@@ -3,6 +3,8 @@ export type TurnSide = "own" | "opponent";
 
 export interface BattleState {
   round: number;
+  turnNumber: number;
+  underdog: TurnSide;
   leftScore: number;
   rightScore: number;
   turn: TurnSide;
