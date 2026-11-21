@@ -275,10 +275,12 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, battleRound
         <div className="battle-score-total">Total this turn <strong>{draft.objectives + draft.tactics + draft.twist}</strong></div>
         <div className="battle-scoring-actions">
           <button type="button" className="battle-primary-button" disabled={scored} onClick={() => { onScore(draft.objectives + draft.tactics + draft.twist); setScored(true); }}>{scored ? "Scoring confirmed" : "Puntuar"}</button>
-          {scored && <button type="button" className="battle-primary-button" onClick={() => { if (turnNumber % 2 === 0 && turnNumber !== 8) setTransitionStep(0); onFinishTurn(); }}>Terminar turno</button>}
         </div>
-        <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
+        <p className="battle-scoring-note">Scoring is optional. If you have no points to record, you can finish the turn without confirming a score.</p>
         </>}
+        <div className="battle-scoring-actions battle-finish-turn">
+          <button type="button" className="battle-primary-button" onClick={() => { if (turnNumber % 2 === 0 && turnNumber !== 8) setTransitionStep(0); onFinishTurn(); }}>Terminar turno</button>
+        </div>
       </section>}
     </section>
   );
