@@ -95,11 +95,14 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
         {activeSection === "battle" ? (
           <BattleBody
             battleRound={battleState.round}
+            turnNumber={battleState.turnNumber}
+            underdog={battleState.underdog}
             turn={battleState.turn}
             phase={battleState.phase}
             onTurnChange={(turn) => onBattleStateChange({ ...battleState, turn })}
             onPhaseChange={(phase) => onBattleStateChange({ ...battleState, phase })}
             onRoundChange={(round) => onBattleStateChange({ ...battleState, round })}
+            onTurnNumberChange={(turnNumber) => onBattleStateChange({ ...battleState, turnNumber })}
             onScoreChange={(side, score) => onBattleStateChange({ ...battleState, [side === "own" ? "leftScore" : "rightScore"]: battleState[side === "own" ? "leftScore" : "rightScore"] + score })}
           />
         ) : activeSection === "tracking" ? (
