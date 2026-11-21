@@ -42,7 +42,7 @@ button { font:inherit; cursor:pointer; }
 .round-caption { color:#5a3c16; font-size:clamp(.42rem,.65vw,.58rem); font-weight:800; line-height:1; text-transform:uppercase; }
 .round-medallion strong { font-family:Georgia,serif; font-size:clamp(1.55rem,3vw,2.4rem); line-height:.95; }
 
-.main-navigation { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:0 22px; border-bottom:2px solid rgba(188,145,75,.75); }
+.main-navigation { position:relative; z-index:5; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:0 22px; border-bottom:2px solid rgba(188,145,75,.75); }
 .nav-item { min-height:72px; display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 8px; border:2px solid rgba(174,151,117,.72); border-bottom:0; border-radius:10px 10px 0 0; color:#e6d4b3; background:linear-gradient(145deg,rgba(34,31,27,.94),rgba(15,14,13,.96)); font-size:clamp(.95rem,1.65vw,1.45rem); font-weight:600; text-shadow:0 2px 4px #000; transition:background .16s ease,box-shadow .16s ease; }
 .nav-item.is-active { color:#fff0c9; border-color:#d6a64d; background:linear-gradient(145deg,rgba(117,78,30,.96),rgba(55,39,20,.96)); box-shadow:inset 0 0 18px rgba(245,179,67,.22),0 0 10px rgba(229,168,66,.2); }
 .nav-icon { font-size:clamp(1.2rem,2vw,1.8rem); line-height:1; }
