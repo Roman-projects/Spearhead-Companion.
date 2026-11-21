@@ -3,9 +3,9 @@ import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 
 type ViewMode = "reduced" | "complete";
 type ContentBlock = { heading: string; items: string[] };
+type ScoreDraft = { objectives: number; tactics: number; twist: number };
 
 const phases = PHASES;
-
 const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBlock[]; fullOwn: ContentBlock[]; fullOpponent: ContentBlock[] }> = {
   hero: {
     own: [{ heading: "Abilities", items: ["Go-Go, Hunt Them Down"] }],
@@ -27,9 +27,9 @@ const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBloc
     fullOpponent: [{ heading: "Movement", items: ["Deathmaster Crixxit · Move 7” (unavailable)", "Deathmaster · Move 7” (unavailable)", "Gutter Runners 1 · Move 7” (unavailable)", "Gutter Runners 2 · Move 7” (unavailable)", "Night Runners · Move 7” (unavailable)"] }],
   },
   shooting: {
-    own: [{ heading: "Abilities", items: [] }, { heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }],
+    own: [{ heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }],
     opponent: [],
-    fullOwn: [{ heading: "Abilities", items: [] }, { heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }, { heading: "Rules", items: ["Shoot", "Shoot in Combat"] }],
+    fullOwn: [{ heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars"] }, { heading: "Rules", items: ["Shoot", "Shoot in Combat"] }],
     fullOpponent: [{ heading: "Weapons", items: ["Night Runners · Slings and Poisoned Stars (unavailable)"] }],
   },
   charge: {
@@ -65,10 +65,10 @@ const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBloc
     ],
   },
   end: {
-    own: [{ heading: "Rules", items: ["End-of-turn checks"] }],
-    opponent: [{ heading: "Rules", items: ["End-of-turn checks"] }],
-    fullOwn: [{ heading: "Rules", items: ["Review temporary effects and states", "Resolve end-of-turn rules"] }],
-    fullOpponent: [{ heading: "Rules", items: ["Review temporary effects and states", "Resolve end-of-turn rules"] }],
+    own: [{ heading: "Abilities", items: ["End of Turn abilities"] }],
+    opponent: [{ heading: "Abilities", items: ["End of Turn abilities"] }],
+    fullOwn: [{ heading: "Abilities", items: ["End of Turn abilities"] }, { heading: "Rules", items: ["Resolve applicable end-of-turn effects"] }],
+    fullOpponent: [{ heading: "Abilities", items: ["End of Turn abilities"] }, { heading: "Rules", items: ["Resolve applicable end-of-turn effects"] }],
   },
 };
 
@@ -80,48 +80,125 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, turn, mode, battleRound }: { phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number }) {
+function PhaseContent({ phase, turn, mode, battleRound, onScore }: {
+  phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number; onScore: (total: number) => void;
+}) {
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
-  const visibleBlocks = blocks
-    .filter((block) => block.items.length > 0)
+  const visibleBlocks = blocks.filter((block) => block.items.length > 0)
     .filter((block) => block.heading !== "Reinforcement" || battleRound >= 3);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [used, setUsed] = useState<Record<string, boolean>>({});
+  const [draft, setDraft] = useState<ScoreDraft>({ objectives: 0, tactics: 0, twist: 0 });
+  const [scored, setScored] = useState(false);
+  const [transitionStep, setTransitionStep] = useState<number | null>(null);
+  const [nextStarter, setNextStarter] = useState<TurnSide>("own");
+  const [underdogChecked, setUnderdogChecked] = useState(false);
+  const [cardsChecked, setCardsChecked] = useState(false);
+
+  useEffect(() => {
+    setCollapsed({});
+    setUsed({});
+    setDraft({ objectives: 0, tactics: 0, twist: 0 });
+    setScored(false);
+    setTransitionStep(null);
+    setNextStarter("own");
+    setUnderdogChecked(false);
+    setCardsChecked(false);
+  }, [phase, turn]);
+
+  const updateDraft = (key: keyof ScoreDraft, delta: number, max: number) => {
+    setDraft((value) => ({ ...value, [key]: Math.max(0, Math.min(max, value[key] + delta)) }));
+  };
+
+  if (phase === "end" && transitionStep !== null) {
+    const steps = [
+      { title: "Priority roll", body: "Make the priority roll to determine who has won the initiative for the new battle round." },
+      { title: "Choose the first turn", body: "The winner of the priority roll chooses which player takes the first turn of the new battle round." },
+      { title: "Determine the Underdog", body: "Check both players’ victory points and determine the Underdog. If the result requires a tie-break, make the appropriate roll-off." },
+      { title: "Twist and battle tactics cards", body: "Draw the new Twist card. Draw or discard and replenish battle tactics cards as required by the battlepack and its conditions." },
+    ];
+    const step = steps[transitionStep];
+    return <section className="battle-round-transition">
+      <p className="battle-eyebrow">NEW BATTLE ROUND</p>
+      <h2>{step.title}</h2>
+      <p>{step.body}</p>
+      <div className="battle-transition-progress">{steps.map((item, index) => <span key={item.title} className={index <= transitionStep ? "is-complete" : ""} />)}</div>
+      {transitionStep === 1 && <div className="battle-choice-row">
+        <button type="button" className={nextStarter === "own" ? "is-selected" : ""} onClick={() => setNextStarter("own")}>Your turn first</button>
+        <button type="button" className={nextStarter === "opponent" ? "is-selected" : ""} onClick={() => setNextStarter("opponent")}>Opponent first</button>
+      </div>}
+      {transitionStep === 2 && <label className="battle-confirm-check"><input type="checkbox" checked={underdogChecked} onChange={(event) => setUnderdogChecked(event.target.checked)} /> Underdog verified (including any required tie-break)</label>}
+      {transitionStep === 3 && <label className="battle-confirm-check"><input type="checkbox" checked={cardsChecked} onChange={(event) => setCardsChecked(event.target.checked)} /> Twist and battle tactics cards resolved</label>}
+      <div className="battle-transition-actions">
+        <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
+        {transitionStep < 3 ? <button type="button" className="battle-primary-button" disabled={transitionStep === 2 && !underdogChecked} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
+          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onScore(0); setTransitionStep(null); }}>Complete round setup</button>}
+      </div>
+    </section>;
+  }
+
   return (
     <section className="battle-phase-content" aria-live="polite">
-      {visibleBlocks.length ? visibleBlocks.map((block, blockIndex) => (
-        <section className="battle-content-block" key={`${phase}-${block.heading}-${blockIndex}`}>
-          <h3>{block.heading}</h3>
-          <div className="battle-action-list">
+      {visibleBlocks.map((block, blockIndex) => {
+        const key = `${phase}-${block.heading}-${blockIndex}`;
+        const isCollapsed = collapsed[key] ?? false;
+        return <section className="battle-content-block" key={key}>
+          <button type="button" className="battle-block-toggle" aria-expanded={!isCollapsed} onClick={() => setCollapsed((value) => ({ ...value, [key]: !isCollapsed }))}>
+            <h3>{block.heading}</h3><span>{isCollapsed ? "+" : "−"}</span>
+          </button>
+          {!isCollapsed && <div className="battle-action-list">
             {block.items.map((item, index) => {
               const unavailable = item.includes("(unavailable)");
-              return <article className={`battle-action-card ${unavailable ? "is-unavailable" : ""}`} key={`${block.heading}-${index}`}>
-                <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : "◆"}</span>
-                <span>{item.replace(" (unavailable)", "")}</span>
+              const itemKey = `${key}-${index}`;
+              const canUse = !unavailable && (block.heading === "Abilities" || block.heading === "Passive abilities");
+              return <article className={`battle-action-card ${unavailable ? "is-unavailable" : ""} ${used[itemKey] ? "is-used" : ""}`} key={itemKey}>
+                <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : used[itemKey] ? "✓" : "◆"}</span>
+                <span className="battle-action-name">{item.replace(" (unavailable)", "")}</span>
                 {unavailable && <span className="battle-unavailable-label">Unavailable</span>}
+                {canUse && <button type="button" className="battle-use-button" aria-pressed={!!used[itemKey]} onClick={() => setUsed((value) => ({ ...value, [itemKey]: !value[itemKey] }))}>{used[itemKey] ? "Used" : "Use"}</button>}
               </article>;
             })}
+          </div>}
+        </section>;
+      })}
+      {phase === "end" && <section className="battle-scoring">
+        <p className="battle-eyebrow">END OF TURN SCORING</p>
+        <h3>Victory points</h3>
+        {([
+          ["objectives", "Objectives", 3],
+          ["tactics", "Battle tactics cards", 3],
+          ["twist", "Twist cards", 4],
+        ] as const).map(([key, label, max]) => <div className="battle-score-row" key={key}>
+          <div><strong>{label}</strong><span>0–{max} points</span></div>
+          <div className="battle-score-controls">
+            <button type="button" disabled={scored || draft[key] <= 0} onClick={() => updateDraft(key, -1, max)}>−</button>
+            <output>{draft[key]}</output>
+            <button type="button" disabled={scored || draft[key] >= max} onClick={() => updateDraft(key, 1, max)}>+</button>
           </div>
-        </section>
-      )) : <div className="battle-empty-state"><span className="battle-empty-ornament" aria-hidden="true">✧</span><p>No unit-specific actions to show in this phase.</p></div>}
+        </div>)}
+        <div className="battle-score-total">Total this turn <strong>{draft.objectives + draft.tactics + draft.twist}</strong></div>
+        <div className="battle-scoring-actions">
+          <button type="button" className="battle-primary-button" disabled={scored} onClick={() => { onScore(draft.objectives + draft.tactics + draft.twist); setScored(true); }}>{scored ? "Scoring confirmed" : "Puntuar"}</button>
+          {scored && <button type="button" className="battle-primary-button" onClick={() => setTransitionStep(0)}>Terminar turno</button>}
+        </div>
+        <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
+      </section>}
     </section>
   );
 }
 
-export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChange, onRoundChange }: {
-  battleRound: number;
-  turn: TurnSide;
-  phase: PhaseId;
-  onTurnChange: (turn: TurnSide) => void;
-  onPhaseChange: (phase: PhaseId) => void;
-  onRoundChange: (round: number) => void;
+export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChange, onRoundChange, onScoreChange }: {
+  battleRound: number; turn: TurnSide; phase: PhaseId;
+  onTurnChange: (turn: TurnSide) => void; onPhaseChange: (phase: PhaseId) => void;
+  onRoundChange: (round: number) => void; onScoreChange: (turn: TurnSide, score: number) => void;
 }) {
-  const currentPhase = phase;
   const [viewedPhase, setViewedPhase] = useState<PhaseId>(phase);
   const [mode, setMode] = useState<ViewMode>("reduced");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
   useEffect(() => { setViewedPhase(phase); }, [phase]);
-  const currentIndex = phases.findIndex((item) => item.id === currentPhase);
-  const isViewingCurrent = currentPhase === viewedPhase;
+  const currentIndex = phases.findIndex((item) => item.id === phase);
+  const isViewingCurrent = phase === viewedPhase;
 
   const stepPhase = (direction: -1 | 1) => {
     const nextIndex = currentIndex + direction;
@@ -129,15 +206,23 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
       const nextPhase = phases[nextIndex].id;
       onPhaseChange(nextPhase);
       setViewedPhase(nextPhase);
-    } else if (direction === 1 && currentPhase === "end") {
-      if (turn === "opponent") onRoundChange(battleRound + 1);
-      onTurnChange(turn === "own" ? "opponent" : "own");
-      onPhaseChange("hero");
-      setViewedPhase("hero");
-    } else if (direction === -1 && currentPhase === "hero") {
+    } else if (direction === -1 && phase === "hero") {
       onTurnChange(turn === "own" ? "opponent" : "own");
       onPhaseChange("end");
       setViewedPhase("end");
+    }
+  };
+
+  const finishTurn = () => {
+    if (turn === "own") {
+      onTurnChange("opponent");
+      onPhaseChange("hero");
+      setViewedPhase("hero");
+    } else {
+      onRoundChange(battleRound + 1);
+      onTurnChange("own");
+      onPhaseChange("hero");
+      setViewedPhase("hero");
     }
   };
 
@@ -153,36 +238,20 @@ export function BattleBody({ battleRound, turn, phase, onTurnChange, onPhaseChan
             <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { onTurnChange("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
           </div>}
         </div>
-        <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}>
-          <EyeIcon open={mode === "complete"} />
-        </button>
+        <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}><EyeIcon open={mode === "complete"} /></button>
       </div>
-
       <nav className="battle-phase-nav" aria-label="Battle phases">
-        {phases.map((item) => (
-          <button key={item.id} type="button" className={`${currentPhase === item.id ? "is-current" : ""} ${viewedPhase === item.id ? "is-viewed" : ""}`}
-            aria-current={currentPhase === item.id ? "step" : undefined}
-            aria-label={`${item.label}${currentPhase === item.id ? ", current phase" : ""}${viewedPhase === item.id ? ", viewing" : ""}`}
-            onClick={() => setViewedPhase(item.id)}>
-            <span>{item.label}</span>
-            {currentPhase === item.id && <span className="battle-current-indicator" title="Current phase" />}
-          </button>
-        ))}
+        {phases.map((item) => <button key={item.id} type="button" className={`${phase === item.id ? "is-current" : ""} ${viewedPhase === item.id ? "is-viewed" : ""}`} aria-current={phase === item.id ? "step" : undefined} onClick={() => setViewedPhase(item.id)}>
+          <span>{item.label}</span>{phase === item.id && <span className="battle-current-indicator" title="Current phase" />}
+        </button>)}
       </nav>
-
       <div className={`battle-phase-pager ${isViewingCurrent ? "" : "is-inspecting"}`}>
-        {isViewingCurrent ? <>
-          <button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button>
-          <span aria-hidden="true" />
-          <button type="button" onClick={() => stepPhase(1)}>Next ›</button>
-        </> : <>
-          <span aria-hidden="true" />
-          <button type="button" className="battle-back-current" onClick={() => setViewedPhase(currentPhase)}>Back to actual phase</button>
-          <span aria-hidden="true" />
-        </>}
+        {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
+          <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
-
-      <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} />
+      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={(score) => onScoreChange(turn, score)} /> :
+        <PhaseContent phase={viewedPhase} turn={turn} mode={mode} battleRound={battleRound} onScore={() => {}} />}
+      {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
   );
 }
