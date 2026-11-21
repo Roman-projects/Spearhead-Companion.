@@ -12,6 +12,34 @@ const battle = {
   right: { faction: "NIGHTHAUNT", army: "Cursed Shacklehorde", score: 6 },
 };
 
+function RoundSpear({ round }: { round: number }) {
+  return (
+    <div className="round-spear" aria-label={`Round ${round}`}>
+      <svg className="spear-art" viewBox="0 0 80 340" role="img" aria-label="Ornate vertical spear">
+        <defs>
+          <linearGradient id="spearGold" x1="0" x2="1">
+            <stop offset="0" stopColor="#70451a" />
+            <stop offset=".28" stopColor="#f8dc91" />
+            <stop offset=".52" stopColor="#9b6828" />
+            <stop offset=".76" stopColor="#f4d27e" />
+            <stop offset="1" stopColor="#583715" />
+          </linearGradient>
+        </defs>
+        <path d="M40 4 L57 82 L49 104 L71 129 L51 139 L48 178 L40 194 L32 178 L29 139 L9 129 L31 104 L23 82 Z" fill="url(#spearGold)" stroke="#f0c66e" strokeWidth="2"/>
+        <path d="M40 18 L45 91 L40 111 L35 91 Z" fill="#fff0bd" opacity=".85"/>
+        <path d="M40 194 L48 225 L45 306 L40 334 L35 306 L32 225 Z" fill="url(#spearGold)" stroke="#d6a34e" strokeWidth="1.5"/>
+        <path d="M40 199 L40 327" stroke="#5b241b" strokeWidth="5" strokeDasharray="12 7"/>
+        <path d="M22 125 L58 125 M27 142 L53 142 M30 179 L50 179 M32 219 L48 219" stroke="#f3d18a" strokeWidth="3"/>
+        <path d="M40 4 L40 334" stroke="#fff0bd" strokeWidth="1" opacity=".6"/>
+      </svg>
+      <div className="round-medallion">
+        <span className="round-caption">Ronda</span>
+        <strong>{round}</strong>
+      </div>
+    </div>
+  );
+}
+
 export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
   return (
     <main className="app-root">
@@ -28,9 +56,7 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
         <section className="battle-heading" aria-label="Current battle">
           <h2>{battle.name}</h2>
           <button className="menu-button" type="button" aria-label="Battle settings">
-            <span />
-            <span />
-            <span />
+            <span /><span /><span />
           </button>
         </section>
 
@@ -43,11 +69,6 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
             <div className="army-score">{battle.left.score}</div>
           </article>
 
-          <div className="round-marker" aria-label={`Round ${battle.round}`}>
-            <div className="round-label">Round</div>
-            <div className="round-number">{battle.round}</div>
-          </div>
-
           <article className="army-banner army-banner--nighthaunt">
             <div className="army-score">{battle.right.score}</div>
             <div className="army-details army-details--right">
@@ -55,6 +76,7 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
               <h3>{battle.right.army}</h3>
             </div>
           </article>
+          <RoundSpear round={battle.round} />
         </section>
 
         <nav className="main-navigation" aria-label="Main sections">
