@@ -89,6 +89,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
     .filter((block) => block.heading !== "Reinforcement" || battleRound >= 3);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [used, setUsed] = useState<Record<string, boolean>>({});
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [draft, setDraft] = useState<ScoreDraft>({ objectives: 0, tactics: 0, twist: 0 });
   const [scored, setScored] = useState(false);
   const [transitionStep, setTransitionStep] = useState<number | null>(null);
@@ -99,6 +100,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
   useEffect(() => {
     setCollapsed({});
     setUsed({});
+    setExpandedItems({});
     setDraft({ objectives: 0, tactics: 0, twist: 0 });
     setScored(false);
     setTransitionStep(null);
@@ -151,12 +153,20 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
             {block.items.map((item, index) => {
               const unavailable = item.includes("(unavailable)");
               const itemKey = `${key}-${index}`;
-              const canUse = !unavailable && (block.heading === "Abilities" || block.heading === "Passive abilities");
-              return <article className={`battle-action-card ${unavailable ? "is-unavailable" : ""} ${used[itemKey] ? "is-used" : ""}`} key={itemKey}>
-                <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : used[itemKey] ? "✓" : "◆"}</span>
-                <span className="battle-action-name">{item.replace(" (unavailable)", "")}</span>
-                {unavailable && <span className="battle-unavailable-label">Unavailable</span>}
-                {canUse && <button type="button" className="battle-use-button" aria-pressed={!!used[itemKey]} onClick={() => setUsed((value) => ({ ...value, [itemKey]: !value[itemKey] }))}>{used[itemKey] ? "Used" : "Use"}</button>}
+              const cleanItem = item.replace(" (unavailable)", "");
+              const isExpanded = !!expandedItems[itemKey];
+              const actionLabel = block.heading === "Movement" ? "Move" : block.heading === "Charge" ? "Charge" : block.heading === "Abilities" ? "Use" : null;
+              const canUse = !!actionLabel && !unavailable && block.heading !== "Passive abilities";
+              return <article className={`battle-action-card battle-action-card-expandable ${unavailable ? "is-unavailable" : ""} ${used[itemKey] ? "is-used" : ""}`} key={itemKey}>
+                <div className="battle-action-main">
+                  <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : used[itemKey] ? "✓" : "◆"}</span>
+                  <button type="button" className="battle-item-toggle" aria-expanded={isExpanded} onClick={() => setExpandedItems((value) => ({ ...value, [itemKey]: !isExpanded }))}>
+                    <span className="battle-action-name">{cleanItem}</span><span className="battle-item-chevron" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
+                  </button>
+                  {unavailable && <span className="battle-unavailable-label">Unavailable</span>}
+                  {canUse && <button type="button" className="battle-use-button" disabled={unavailable} aria-pressed={!!used[itemKey]} onClick={() => setUsed((value) => ({ ...value, [itemKey]: !value[itemKey] }))}>{used[itemKey] ? (actionLabel === "Move" ? "Moved" : actionLabel === "Charge" ? "Charged" : "Used") : actionLabel}</button>}
+                </div>
+                {isExpanded && <div className="battle-item-details">Information will be added here.</div>}
               </article>;
             })}
           </div>}
