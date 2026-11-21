@@ -12,6 +12,12 @@ export default function App() {
     rightScore: 0,
     underdog: "own",
     turn: "own",
+    roundStarter: "own",
+    priorityWinner: null,
+    seizedInitiative: false,
+    doubleTurn: false,
+    tacticsDrawBlocked: false,
+    tacticsCardsRecovered: 0,
     phase: "hero",
   });
 
