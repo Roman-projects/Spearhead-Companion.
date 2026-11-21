@@ -98,12 +98,12 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPreset, battleRound, roundStarter, leftScore, rightScore, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
-  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; turnNumber: number; mode: ViewMode; layoutPreset: LayoutPreset; battleRound: number; roundStarter: TurnSide; leftScore: number; rightScore: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide, result: RoundSetupResult) => void;
+function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode, layoutPreset, battleRound, roundStarter, leftScore, rightScore, usedActions, setUsedActions, onScore, onFinishTurn, onCompleteRound }: {
+  phase: PhaseId; currentPhase: PhaseId; turn: TurnSide; viewedArmy: TurnSide; turnNumber: number; mode: ViewMode; layoutPreset: LayoutPreset; battleRound: number; roundStarter: TurnSide; leftScore: number; rightScore: number; usedActions: Record<string, boolean>; setUsedActions: Dispatch<SetStateAction<Record<string, boolean>>>; onScore: (total: number) => void; onFinishTurn: () => void; onCompleteRound: (nextTurn: TurnSide, result: RoundSetupResult) => void;
 }) {
   const previousSecond: TurnSide = roundStarter === "own" ? "opponent" : "own";
   const data = phaseContent[phase];
-  const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
+  const blocks = mode === "complete" ? (viewedArmy === "own" ? data.fullOwn : data.fullOpponent) : (viewedArmy === "own" ? data.own : data.opponent);
   const visibleBlocks = blocks.filter((block) => block.items.length > 0)
     .filter((block) => block.heading !== "Reinforcement" || battleRound >= 3);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -211,7 +211,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPrese
           </button>
           {!isCollapsed && <div className="battle-action-list">
             {block.items.map((item) => {
-              const unavailable = item.includes("(unavailable)") || phase !== currentPhase;
+              const unavailable = item.includes("(unavailable)") || phase !== currentPhase || viewedArmy !== turn;
               const cleanItem = item.replace(" (unavailable)", "");
               const itemKey = `${phase}-${cleanItem}`;
               const isExpanded = !!expandedItems[itemKey];
@@ -237,12 +237,12 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPrese
                   {isMovement ? <><p>Move characteristic: 7”</p><div className="battle-option-list">{movementOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
                     const optionUsed = !!usedActions[optionKey] || groupUsed;
-                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || groupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || viewedArmy !== turn || groupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
             })}</div></> :
                   isWeapon ? <div className="battle-option-list">{weaponOptions.map((option) => {
                     const optionKey = `${itemKey}-${option}`;
                     const optionUsed = !!usedActions[optionKey];
-                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || viewedArmy !== turn || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
                   })}</div> : <p>Information will be added here.</p>}
                 </div>}
               </article>;
@@ -250,7 +250,7 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPrese
           </div>}
         </section>;
       })}
-      {phase === "end" && <section className="battle-scoring">
+      {phase === "end" && viewedArmy === turn && <section className="battle-scoring">
         <button type="button" className="battle-score-toggle" aria-expanded={scoringOpen} onClick={() => setScoringOpen((open) => !open)}>Puntuar <span>{scoringOpen ? "−" : "+"}</span></button>
         {scoringOpen && <>
         <p className="battle-eyebrow">END OF TURN SCORING</p>
@@ -292,8 +292,10 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
   const [mode, setMode] = useState<ViewMode>("complete");
   const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>("closed");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
+  const [viewedArmy, setViewedArmy] = useState<TurnSide>(turn);
   const [usedActions, setUsedActions] = useState<Record<string, boolean>>({});
   useEffect(() => { setViewedPhase(phase); }, [phase]);
+  useEffect(() => { setViewedArmy(turn); }, [turn]);
   const currentIndex = phases.findIndex((item) => item.id === phase);
   const isViewingCurrent = phase === viewedPhase;
 
@@ -357,8 +359,8 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
         {isViewingCurrent ? <><button type="button" disabled={currentIndex === 0} onClick={() => stepPhase(-1)}>‹ Previous</button><span aria-hidden="true" />{phase !== "end" && <button type="button" onClick={() => stepPhase(1)}>Next ›</button>}</> :
           <><span aria-hidden="true" /><button type="button" className="battle-back-current" onClick={() => setViewedPhase(phase)}>Back to actual phase</button><span aria-hidden="true" /></>}
       </div>
-      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
-        <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} />}
+      {isViewingCurrent && phase === "end" ? <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} viewedArmy={viewedArmy} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={(score) => onScoreChange(turn, score)} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} /> :
+        <PhaseContent phase={viewedPhase} currentPhase={phase} turn={turn} viewedArmy={viewedArmy} turnNumber={turnNumber} mode={mode} layoutPreset={layoutPreset} battleRound={battleRound} roundStarter={roundStarter} leftScore={leftScore} rightScore={rightScore} usedActions={usedActions} setUsedActions={setUsedActions} onScore={() => {}} onFinishTurn={finishTurn} onCompleteRound={completeRoundSetup} />}
       {isViewingCurrent && phase === "end" && <div className="battle-hidden-finish-hook" aria-hidden="true" />}
     </div>
   );
