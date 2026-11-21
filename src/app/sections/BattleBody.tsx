@@ -281,9 +281,9 @@ function PhaseContent({ phase, currentPhase, turn, viewedArmy, turnNumber, mode,
   );
 }
 
-export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, roundStarter, leftScore, rightScore, onPhaseChange, onTurnEnd, onScoreChange, onCompleteRound }: {
+export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, roundStarter, leftScore, rightScore, onTurnChange, onPhaseChange, onTurnEnd, onScoreChange, onCompleteRound }: {
   battleRound: number; turnNumber: number; underdog: TurnSide; turn: TurnSide; phase: PhaseId; roundStarter: TurnSide; leftScore: number; rightScore: number;
-  onPhaseChange: (phase: PhaseId) => void;
+  onTurnChange: (turn: TurnSide) => void; onPhaseChange: (phase: PhaseId) => void;
   onTurnEnd: (turnNumber: number, turn: TurnSide, phase: PhaseId) => void;
   onScoreChange: (turn: TurnSide, score: number) => void;
   onCompleteRound: (nextStarter: TurnSide, result: RoundSetupResult) => void;
