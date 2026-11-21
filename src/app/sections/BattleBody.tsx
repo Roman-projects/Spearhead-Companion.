@@ -81,7 +81,7 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }: {
-  phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number; onScore: (total: number) => void; onFinishTurn: () => void;
+  phase: PhaseId; turn: TurnSide; mode: ViewMode; battleRound: number; onScore: (total: number) => void; onFinishTurn: (nextTurn?: TurnSide) => void;
 }) {
   const data = phaseContent[phase];
   const blocks = mode === "complete" ? (turn === "own" ? data.fullOwn : data.fullOpponent) : (turn === "own" ? data.own : data.opponent);
@@ -133,7 +133,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
       <div className="battle-transition-actions">
         <button type="button" className="battle-secondary-button" onClick={() => setTransitionStep(Math.max(0, transitionStep - 1))} disabled={transitionStep === 0}>Back</button>
         {transitionStep < 3 ? <button type="button" className="battle-primary-button" disabled={transitionStep === 2 && !underdogChecked} onClick={() => setTransitionStep(transitionStep + 1)}>Continue</button> :
-          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onFinishTurn(); }}>Complete round setup</button>}
+          <button type="button" className="battle-primary-button" disabled={!cardsChecked} onClick={() => { onFinishTurn(nextStarter); }}>Complete round setup</button>}
       </div>
     </section>;
   }
