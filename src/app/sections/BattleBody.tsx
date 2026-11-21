@@ -2,7 +2,7 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 
 type ViewMode = "reduced" | "complete";
-type LayoutPreset = "tactical" | "total";
+type LayoutPreset = "closed" | "tactical" | "complete";
 type ContentBlock = { heading: string; items: string[] };
 type ScoreDraft = { objectives: number; tactics: number; twist: number };
 type RoundSetupResult = {
@@ -81,10 +81,15 @@ const phaseContent: Record<PhaseId, { own: ContentBlock[]; opponent: ContentBloc
   },
 };
 
-function BookIcon({ open }: { open: boolean }) {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? "M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1 2.5-1.7 5.5-2 9-1v-13c-3.5-1-6.5-.7-9 1Z" : "M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1V6.5Zm0 0c2.5-1.7 5.5-2 9-1v13c-3.5-1-6.5-.7-9 1"} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 9h3M6 12h3M15 9h3M15 12h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>;
+function BookIcon({ preset }: { preset: LayoutPreset }) {
+  if (preset === "closed") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1 2.5-1.7 5.5-2 9-1v-13c-3.5-1-6.5-.7-9 1Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 6.5v13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>;
+  }
+  if (preset === "tactical") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1 2.5-1.7 5.5-2 9-1v-13c-3.5-1-6.5-.7-9 1Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 9h3M15 9h3M6 12h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>;
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C9.5 4.8 6.5 4.5 3 5.5v13c3.5-1 6.5-.7 9 1 2.5-1.7 5.5-2 9-1v-13c-3.5-1-6.5-.7-9 1Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 9h3M6 12h3M6 15h3M15 9h3M15 12h3M15 15h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>;
 }
-
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.4-6 9.8-6 9.8 6 9.8 6-3.4 6-9.8 6-9.8-6-9.8-6Z" fill="none" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" strokeWidth="1.8"/></svg>
@@ -133,10 +138,10 @@ function PhaseContent({ phase, currentPhase, turn, turnNumber, mode, layoutPrese
     const sectionState: Record<string, boolean> = {};
     const itemState: Record<string, boolean> = {};
     visibleBlocks.forEach((block, blockIndex) => {
-      sectionState[`${phase}-${block.heading}-${blockIndex}`] = false;
+      sectionState[`${phase}-${block.heading}-${blockIndex}`] = layoutPreset !== "complete" && blockIndex > 0;
       block.items.forEach((item) => {
         const cleanItem = item.replace(" (unavailable)", "");
-        itemState[`${phase}-${cleanItem}`] = layoutPreset === "total";
+        itemState[`${phase}-${cleanItem}`] = layoutPreset !== "closed";
       });
     });
     setCollapsed(sectionState);
@@ -284,8 +289,8 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
   onCompleteRound: (nextStarter: TurnSide, result: RoundSetupResult) => void;
 }){
   const [viewedPhase, setViewedPhase] = useState<PhaseId>(phase);
-  const [mode, setMode] = useState<ViewMode>("reduced");
-  const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>("tactical");
+  const [mode, setMode] = useState<ViewMode>("complete");
+  const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>("closed");
   const [turnMenuOpen, setTurnMenuOpen] = useState(false);
   const [usedActions, setUsedActions] = useState<Record<string, boolean>>({});
   useEffect(() => { setViewedPhase(phase); }, [phase]);
@@ -339,7 +344,7 @@ export function BattleBody({ battleRound, turnNumber, underdog, turn, phase, rou
             <button type="button" role="option" aria-selected={turn === "opponent"} onClick={() => { onTurnChange("opponent"); setTurnMenuOpen(false); }}>Opponent’s turn</button>
           </div>}
         </div>
-        <button type="button" className="battle-view-toggle battle-book-toggle" aria-label={layoutPreset === "tactical" ? "Vista táctica. Switch to vista total" : "Vista total. Switch to vista táctica"} title={layoutPreset === "tactical" ? "Vista táctica" : "Vista total"} aria-pressed={layoutPreset === "total"} onClick={() => setLayoutPreset((value) => value === "tactical" ? "total" : "tactical")}><BookIcon open={layoutPreset === "total"} /></button>
+        <button type="button" className="battle-view-toggle battle-book-toggle" aria-label={`Vista ${layoutPreset}. Cambiar a ${layoutPreset === "closed" ? "táctica" : layoutPreset === "tactical" ? "completa" : "cerrada"}`} title={`Vista ${layoutPreset}`} aria-pressed={layoutPreset !== "closed"} onClick={() => setLayoutPreset((value) => value === "closed" ? "tactical" : value === "tactical" ? "complete" : "closed")}><BookIcon preset={layoutPreset} /></button>
         <button type="button" className="battle-view-toggle" aria-label={mode === "reduced" ? "Reduced view. Switch to complete view" : "Complete view. Switch to reduced view"} aria-pressed={mode === "complete"} onClick={() => setMode((value) => value === "reduced" ? "complete" : "reduced")}><EyeIcon open={mode === "complete"} /></button>
       </div>
       <nav className="battle-phase-nav" aria-label="Battle phases">
