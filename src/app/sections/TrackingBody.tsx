@@ -65,6 +65,15 @@ export function TrackingBody({ battleState, onChange }: TrackingBodyProps) {
           disabledDecrease={battleState.round <= 1} />
       </section>
 
+      <section className="tracking-group" aria-labelledby="tracking-turn-number-title">
+        <h3 id="tracking-turn-number-title">Turn counter</h3>
+        <CounterRow label="Current turn number" value={battleState.turnNumber}
+          onDecrease={() => onChange({ turnNumber: Math.max(1, battleState.turnNumber - 1) })}
+          onIncrease={() => onChange({ turnNumber: Math.min(8, battleState.turnNumber + 1) })}
+          disabledDecrease={battleState.turnNumber <= 1}
+          disabledIncrease={battleState.turnNumber >= 8} />
+      </section>
+
       <section className="tracking-group" aria-labelledby="tracking-turn-title">
         <h3 id="tracking-turn-title">Current turn</h3>
         <div className="tracking-turn-options">
@@ -72,6 +81,16 @@ export function TrackingBody({ battleState, onChange }: TrackingBodyProps) {
             aria-pressed={battleState.turn === "own"} onClick={() => setTurn("own")}>Your turn</button>
           <button type="button" className={battleState.turn === "opponent" ? "is-selected" : ""}
             aria-pressed={battleState.turn === "opponent"} onClick={() => setTurn("opponent")}>Opponent’s turn</button>
+        </div>
+      </section>
+
+      <section className="tracking-group" aria-labelledby="tracking-underdog-title">
+        <h3 id="tracking-underdog-title">Underdog marker</h3>
+        <div className="tracking-turn-options">
+          <button type="button" className={battleState.underdog === "own" ? "is-selected" : ""}
+            aria-pressed={battleState.underdog === "own"} onClick={() => onChange({ underdog: "own" })}>Crixxit</button>
+          <button type="button" className={battleState.underdog === "opponent" ? "is-selected" : ""}
+            aria-pressed={battleState.underdog === "opponent"} onClick={() => onChange({ underdog: "opponent" })}>Cursed Shacklehorde</button>
         </div>
       </section>
 
