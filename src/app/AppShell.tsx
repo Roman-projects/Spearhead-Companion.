@@ -5,11 +5,28 @@ interface AppShellProps {
   onSectionChange: (section: MainSection) => void;
 }
 
+type ArmyStatusTag = {
+  id: string;
+  label: string;
+};
+
 const battle = {
   name: "Ciudad de Ceniza",
   round: 2,
-  left: { faction: "SKAVEN", army: "Crixxit’s Kill-Pack", score: 8 },
-  right: { faction: "NIGHTHAUNT", army: "Cursed Shacklehorde", score: 6 },
+  left: {
+    faction: "SKAVEN",
+    army: "Crixxit’s Kill-Pack",
+    score: 8,
+    isActive: true,
+    temporaryTags: [] as ArmyStatusTag[],
+  },
+  right: {
+    faction: "NIGHTHAUNT",
+    army: "Cursed Shacklehorde",
+    score: 6,
+    isActive: false,
+    temporaryTags: [] as ArmyStatusTag[],
+  },
 };
 
 function RoundSpear({ round }: { round: number }) {
@@ -40,6 +57,48 @@ function RoundSpear({ round }: { round: number }) {
   );
 }
 
+function ArmyPanel({
+  side,
+  faction,
+  army,
+  score,
+  isActive,
+  temporaryTags,
+}: {
+  side: "left" | "right";
+  faction: string;
+  army: string;
+  score: number;
+  isActive: boolean;
+  temporaryTags: ArmyStatusTag[];
+}) {
+  return (
+    <article
+      className={`army-banner army-banner--${side} ${isActive ? "is-turn-active" : "is-turn-inactive"}`}
+      aria-label={`${army}, ${isActive ? "active turn" : "inactive turn"}`}
+    >
+      <div className="army-heading">
+        <p className="faction-name">
+          {side === "left" && <span aria-hidden="true">⚒</span>}
+          {faction}
+          {side === "right" && <span aria-hidden="true">☠</span>}
+        </p>
+        <h3>{army}</h3>
+      </div>
+
+      {temporaryTags.length > 0 && (
+        <div className="army-status-tags" aria-label="Temporary army status">
+          {temporaryTags.map((tag) => (
+            <span className="army-status-tag" key={tag.id}>{tag.label}</span>
+          ))}
+        </div>
+      )}
+
+      <div className="army-score">{score}</div>
+    </article>
+  );
+}
+
 export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
   return (
     <main className="app-root">
@@ -61,21 +120,8 @@ export function AppShell({ activeSection, onSectionChange }: AppShellProps) {
         </section>
 
         <section className="battle-scoreboard" aria-label="Battle scoreboard">
-          <article className="army-banner army-banner--skaven">
-            <div className="army-details">
-              <p className="faction-name"><span aria-hidden="true">⚒</span>{battle.left.faction}</p>
-              <h3>{battle.left.army}</h3>
-            </div>
-            <div className="army-score">{battle.left.score}</div>
-          </article>
-
-          <article className="army-banner army-banner--nighthaunt">
-            <div className="army-score">{battle.right.score}</div>
-            <div className="army-details army-details--right">
-              <p className="faction-name">{battle.right.faction}<span aria-hidden="true">☠</span></p>
-              <h3>{battle.right.army}</h3>
-            </div>
-          </article>
+          <ArmyPanel side="left" {...battle.left} />
+          <ArmyPanel side="right" {...battle.right} />
           <RoundSpear round={battle.round} />
         </section>
 
