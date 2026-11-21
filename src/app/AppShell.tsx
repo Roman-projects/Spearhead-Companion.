@@ -19,6 +19,22 @@ const battle = {
   right: { faction: "NIGHTHAUNT", army: "Cursed Shacklehorde", score: 6, isActive: false, temporaryTags: [] as ArmyStatusTag[] },
 };
 
+function TurnTracker({ turnNumber }: { turnNumber: number }) {
+  return (
+    <div className="turn-tracker" role="group" aria-label={`Battle turn ${turnNumber} of 8`}>
+      {Array.from({ length: 8 }, (_, index) => {
+        const turn = index + 1;
+        const status = turn < turnNumber ? "is-complete" : turn === turnNumber ? "is-current" : "is-upcoming";
+        return <span className={`turn-tracker-icon ${status}`} key={turn} title={`Turn ${turn}`} aria-label={`Turn ${turn}${turn === turnNumber ? ", current" : turn < turnNumber ? ", completed" : ", upcoming"}`}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 4l11 11M8 3l-5 5M4 8l-1 4 4-1M19 4L8 15M16 3l5 5M20 8l1 4-4-1M9 14l-3 6M15 14l3 6M6 20h4M14 20h4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>;
+      })}
+    </div>
+  );
+}
+
 function RoundSpear({ round }: { round: number }) {
   return (
     <div className="round-spear" aria-label={`Round ${round}`}>
@@ -73,7 +89,7 @@ export function AppShell({ activeSection, onSectionChange, battleState, onBattle
           <button className="menu-button" type="button" aria-label="Battle settings"><span /><span /><span /></button>
         </header>
 
-        <section className="battle-heading" aria-label="Current battle"><h2>{battle.name}</h2></section>
+        <section className="battle-heading" aria-label="Current battle"><TurnTracker turnNumber={battleState.turnNumber} /><h2>{battle.name}</h2></section>
 
         <section className="battle-scoreboard" aria-label="Battle scoreboard">
           <ArmyPanel side="left" {...battle.left} temporaryTags={battleState.underdog === "own" ? [{ id: "underdog", label: "Underdog" }] : []} score={battleState.leftScore} isActive={battleState.turn === "own"} />
