@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { PHASES, type PhaseId, type TurnSide } from "../battleState";
 
 type ViewMode = "reduced" | "complete";
@@ -92,6 +92,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [draft, setDraft] = useState<ScoreDraft>({ objectives: 0, tactics: 0, twist: 0 });
   const [scored, setScored] = useState(false);
+  const [scoringOpen, setScoringOpen] = useState(false);
   const [transitionStep, setTransitionStep] = useState<number | null>(null);
   const [nextStarter, setNextStarter] = useState<TurnSide>("own");
   const [underdogChecked, setUnderdogChecked] = useState(false);
@@ -103,6 +104,7 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
     setExpandedItems({});
     setDraft({ objectives: 0, tactics: 0, twist: 0 });
     setScored(false);
+    setScoringOpen(false);
     setTransitionStep(null);
     setNextStarter("own");
     setUnderdogChecked(false);
@@ -151,28 +153,46 @@ function PhaseContent({ phase, turn, mode, battleRound, onScore, onFinishTurn }:
           </button>
           {!isCollapsed && <div className="battle-action-list">
             {block.items.map((item, index) => {
-              const unavailable = item.includes("(unavailable)");
-              const itemKey = `${key}-${index}`;
+              const unavailable = item.includes("(unavailable)") || phase !== currentPhase;
+              const itemKey = `${phase}-${item.replace(" (unavailable)", "")}`;
               const cleanItem = item.replace(" (unavailable)", "");
               const isExpanded = !!expandedItems[itemKey];
-              const actionLabel = block.heading === "Movement" ? "Move" : block.heading === "Charge" ? "Charge" : block.heading === "Abilities" ? "Use" : null;
-              const canUse = !!actionLabel && !unavailable && block.heading !== "Passive abilities";
-              return <article className={`battle-action-card battle-action-card-expandable ${unavailable ? "is-unavailable" : ""} ${used[itemKey] ? "is-used" : ""}`} key={itemKey}>
+              const isMovement = block.heading === "Movement";
+              const isWeapon = block.heading === "Weapons" && (phase === "shooting" || phase === "combat");
+              const actionLabel = block.heading === "Charge" ? "Charge" : block.heading === "Abilities" ? "Use" : null;
+              const movementOptions = ["Normal Move", "Run · Move + 1D6", "Retreat · 1D3 mortal damage"];
+              const weaponOptions = phase === "shooting" ? ["Slings", "Poisoned Stars"] : ["Melee weapon profile"];
+              const options = isMovement ? movementOptions : isWeapon ? weaponOptions : [];
+              const unitName = isMovement ? cleanItem.split(" · ")[0] : cleanItem;
+              const isGroupUsed = options.some((option) => usedActions[`${itemKey}-${option}`]);
+              const canUse = !!actionLabel && !unavailable;
+              return <article className={`battle-action-card battle-action-card-expandable ${unavailable ? "is-unavailable" : ""} ${usedActions[itemKey] || isGroupUsed ? "is-used" : ""}`} key={itemKey}>
                 <div className="battle-action-main">
-                  <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : used[itemKey] ? "✓" : "◆"}</span>
+                  <span className="battle-action-marker" aria-hidden="true">{unavailable ? "—" : usedActions[itemKey] || isGroupUsed ? "✓" : "◆"}</span>
                   <button type="button" className="battle-item-toggle" aria-expanded={isExpanded} onClick={() => setExpandedItems((value) => ({ ...value, [itemKey]: !isExpanded }))}>
-                    <span className="battle-action-name">{cleanItem}</span><span className="battle-item-chevron" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
+                    <span className="battle-action-name">{unitName}</span><span className="battle-item-chevron" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
                   </button>
                   {unavailable && <span className="battle-unavailable-label">Unavailable</span>}
-                  {canUse && <button type="button" className="battle-use-button" disabled={unavailable} aria-pressed={!!used[itemKey]} onClick={() => setUsed((value) => ({ ...value, [itemKey]: !value[itemKey] }))}>{used[itemKey] ? (actionLabel === "Move" ? "Moved" : actionLabel === "Charge" ? "Charged" : "Used") : actionLabel}</button>}
+                  {canUse && <button type="button" className="battle-use-button" disabled={unavailable || !!usedActions[itemKey]} aria-pressed={!!usedActions[itemKey]} onClick={() => setUsedActions((value) => ({ ...value, [itemKey]: true }))}>{usedActions[itemKey] ? "Used" : actionLabel}</button>}
                 </div>
-                {isExpanded && <div className="battle-item-details">Information will be added here.</div>}
+                {isExpanded && <div className="battle-item-details">
+                  {isMovement ? <><p>Move characteristic: 7”</p><div className="battle-option-list">{movementOptions.map((option) => {
+                    const optionKey = `${itemKey}-${option}`;
+                    const optionUsed = !!usedActions[optionKey] || isGroupUsed;
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || isGroupUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                  })}</div></> :
+                  isWeapon ? <div className="battle-option-list">{weaponOptions.map((option) => {
+                    const optionKey = `${itemKey}-${option}`;
+                    const optionUsed = !!usedActions[optionKey];
+                    return <div className="battle-option-row" key={option}><span>{option}</span><button type="button" className="battle-use-button" disabled={phase !== currentPhase || optionUsed} aria-pressed={optionUsed} onClick={() => setUsedActions((value) => ({ ...value, [optionKey]: true }))}>{optionUsed ? "Used" : "Use"}</button></div>;
+                  })}</div> : <p>Information will be added here.</p>}
+                </div>}
               </article>;
             })}
           </div>}
         </section>;
       })}
-      {phase === "end" && <section className="battle-scoring">
+      {phase === "end" && <section className="battle-scoring">\n        <button type="button" className="battle-score-toggle" aria-expanded={scoringOpen} onClick={() => setScoringOpen((open) => !open)}>Puntuar <span>{scoringOpen ? "−" : "+"}</span></button>\n        {scoringOpen && <>
         <p className="battle-eyebrow">END OF TURN SCORING</p>
         <h3>Victory points</h3>
         {([
