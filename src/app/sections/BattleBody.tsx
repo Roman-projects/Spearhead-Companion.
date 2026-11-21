@@ -198,7 +198,8 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
         </section>;
       })}
       {phase === "end" && <section className="battle-scoring">
-        <button type="button" className="battle-score-toggle" aria-expanded={scoringOpen} onClick={() => setScoringOpen((open) => !open)}>Puntuar <span>{scoringOpen ? "−" : "+"}</span></button>\n        {scoringOpen && <>
+        <button type="button" className="battle-score-toggle" aria-expanded={scoringOpen} onClick={() => setScoringOpen((open) => !open)}>Puntuar <span>{scoringOpen ? "−" : "+"}</span></button>
+        {scoringOpen && <>
         <p className="battle-eyebrow">END OF TURN SCORING</p>
         <h3>Victory points</h3>
         {([
@@ -219,6 +220,7 @@ function PhaseContent({ phase, currentPhase, turn, mode, battleRound, usedAction
           {scored && <button type="button" className="battle-primary-button" onClick={() => turn === "own" ? onFinishTurn() : setTransitionStep(0)}>Terminar turno</button>}
         </div>
         <p className="battle-scoring-note">Confirm your score even when all three categories are 0. You can only score once per turn.</p>
+        </>}
       </section>}
     </section>
   );
