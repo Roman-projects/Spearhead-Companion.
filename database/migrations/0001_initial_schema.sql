@@ -7,6 +7,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id TEXT NOT NULL UNIQUE,
   display_name TEXT,
   handle TEXT UNIQUE,
   locale TEXT NOT NULL DEFAULT 'en',
@@ -14,18 +15,6 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deactivated_at TIMESTAMPTZ
 );
-
-CREATE TABLE user_auth_identities (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL,
-  provider_subject TEXT NOT NULL,
-  email TEXT,
-  email_verified BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (provider, provider_subject)
-);
-CREATE INDEX user_auth_identities_user_idx ON user_auth_identities(user_id);
 
 CREATE TABLE plans (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
