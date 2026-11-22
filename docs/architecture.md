@@ -16,8 +16,12 @@ Build the current Spearhead companion on a foundation that can later support acc
 ## Domain boundaries
 
 ### Identity and account
-- `users` is the product-level account, independent of the authentication provider.
-- `user_auth_identities` maps external provider subjects to a user. This avoids binding the domain model to a provider before one is selected.
+- Authentication: Better Auth, hosted by our Vercel Functions and backed by Neon PostgreSQL.
+- Supported sign-in methods: email/password and Google OAuth.
+- Better Auth owns authentication identities, provider accounts, credentials, verification records, and login sessions. Do not create a parallel provider-identity table in the product schema.
+- The product-level `users` row stores game/profile data and maps one-to-one to the Better Auth user through `auth_user_id`. Product tables reference the product-level user ID.
+- Link sign-in methods only through Better Auth's verified identity and account-linking flow. Never merge accounts based only on an unverified matching email.
+- Require email verification for password-based accounts before issuing an authenticated session. Configure a transactional email sender before enabling public registration.
 - Account deletion/deactivation must be designed with retention and anonymization of historical match records in mind.
 
 ### Entitlements
@@ -68,12 +72,13 @@ Build the current Spearhead companion on a foundation that can later support acc
 
 1. Establish this architecture and the database migration baseline.
 2. Provision Neon and configure Vercel environment variables without committing secrets.
-3. Add server-side database access and health/migration checks.
+3. Add Better Auth with email/password and Google OAuth, plus its generated database schema.
+4. Add server-side database access and health/migration checks.
 4. Build the official-source ingestion and verification pipeline.
 5. Define the normalized army catalog and generate Army and Battle views from the same data.
 6. Add match snapshot persistence.
-7. Add account identity, saved armies, sessions, and history.
-8. Add statistics, points-based lists, and subscription entitlements as later product phases.
+8. Add saved armies, game sessions, match history, and account-linked profiles.
+9. Add statistics, points-based lists, and subscription entitlements as later product phases.
 
 ## Operational rules
 
@@ -87,7 +92,7 @@ Build the current Spearhead companion on a foundation that can later support acc
 
 ## Decisions intentionally left open
 
-- Authentication provider and login methods.
+- Transactional email delivery provider for verification and password recovery.
 - Billing/subscription provider.
 - Exact free and premium limits.
 - Whether anonymous/local matches can later be claimed by an account.
