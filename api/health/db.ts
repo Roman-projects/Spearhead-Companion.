@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { getDbPool } from "../_lib/db";
 
 type ApiRequest = {
   method?: string;
@@ -9,26 +9,6 @@ type ApiResponse = {
   setHeader(name: string, value: string): void;
   json(body: unknown): void;
 };
-
-let pool: Pool | undefined;
-
-function getPool(): Pool {
-  if (pool) return pool;
-
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is not configured");
-  }
-
-  pool = new Pool({
-    connectionString,
-    max: 1,
-    connectionTimeoutMillis: 5_000,
-    idleTimeoutMillis: 10_000,
-  });
-
-  return pool;
-}
 
 export default async function handler(
   request: ApiRequest,
@@ -43,7 +23,7 @@ export default async function handler(
   }
 
   try {
-    await getPool().query("SELECT 1");
+    await getDbPool().query("SELECT 1");
     response.status(200).json({
       ok: true,
       database: "connected",
@@ -58,7 +38,6 @@ export default async function handler(
       errorCode: typeof diagnostic.code === "string" ? diagnostic.code : undefined,
     });
 
-    // Keep connection details and provider errors out of the public response.
     response.status(503).json({
       ok: false,
       database: "unavailable",
