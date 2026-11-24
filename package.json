@@ -10,7 +10,8 @@
     "typecheck": "tsc -b",
     "cap:sync": "cap sync",
     "cap:open:ios": "cap open ios",
-    "cap:open:android": "cap open android"
+    "cap:open:android": "cap open android",
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^6.2.0",
