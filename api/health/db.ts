@@ -1,4 +1,4 @@
-import { getDbPool } from "../../server/db";
+import { getDbPool } from "../../server/db.js";
 
 type ApiRequest = {
   method?: string;
