@@ -1,4 +1,4 @@
-import { getDbPool } from "../_lib/db";
+import { getDbPool } from "../../server/db";
 
 type ApiRequest = {
   method?: string;
@@ -29,7 +29,6 @@ export default async function handler(
       database: "connected",
     });
   } catch (error: unknown) {
-    // Log only safe diagnostics. Never log the connection string or raw error message.
     const diagnostic = error && typeof error === "object"
       ? error as { name?: unknown; code?: unknown }
       : {};
