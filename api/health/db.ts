@@ -48,7 +48,16 @@ export default async function handler(
       ok: true,
       database: "connected",
     });
-  } catch {
+  } catch (error: unknown) {
+    // Log only safe diagnostics. Never log the connection string or raw error message.
+    const diagnostic = error && typeof error === "object"
+      ? error as { name?: unknown; code?: unknown }
+      : {};
+    console.error("Database health check failed", {
+      errorName: typeof diagnostic.name === "string" ? diagnostic.name : "UnknownError",
+      errorCode: typeof diagnostic.code === "string" ? diagnostic.code : undefined,
+    });
+
     // Keep connection details and provider errors out of the public response.
     response.status(503).json({
       ok: false,
